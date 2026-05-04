@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import Sidebar, { type RouteKey } from './components/Sidebar'
 import OverviewPage from './pages/Overview'
 import DisbursementsPage from './pages/Disbursements'
@@ -119,18 +119,21 @@ const PageRouter = () => {
         className="pointer-events-none fixed inset-0 -z-10 grid-bg opacity-[0.35]"
         aria-hidden
       />
-      {/* Hamburger toggle — shown only below md.  Tucked into the corner
-          where the page heading begins; sits above the sidebar/backdrop in
-          the stack so it's always reachable. */}
-      <button
-        type="button"
-        onClick={() => setDrawerOpen((o) => !o)}
-        aria-label={drawerOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={drawerOpen}
-        className="fixed left-4 top-4 z-50 grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 text-ink-primary shadow-lg backdrop-blur-md md:hidden"
-      >
-        {drawerOpen ? <X size={18} /> : <Menu size={18} />}
-      </button>
+      {/* Hamburger toggle — shown only below md, AND only while the drawer
+          is closed. When the drawer is open the user closes it by tapping
+          the backdrop or pressing Escape, so an explicit close button would
+          just overlap the sidebar's own logo. */}
+      {!drawerOpen && (
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={false}
+          className="fixed left-4 top-4 z-50 grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 text-ink-primary shadow-lg backdrop-blur-md md:hidden"
+        >
+          <Menu size={18} />
+        </button>
+      )}
 
       {/* Backdrop — only on mobile when drawer is open. */}
       <AnimatePresence>

@@ -88,7 +88,7 @@ const Analytics = () => {
     <div className="space-y-6">
       <div>
         <Pill tone="cyan">Insights</Pill>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">Analytics</h1>
+        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Analytics</h1>
         <p className="mt-1 text-sm text-ink-secondary">
           The story behind the numbers. Who you owe what, and where it's headed.
         </p>

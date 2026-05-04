@@ -69,7 +69,7 @@ export const StatCard = ({
         </div>
         {icon && <div className={clsx(TONE_ICON[tone])}>{icon}</div>}
       </div>
-      <div className="relative mt-3 font-display text-3xl font-semibold tracking-tight tabular">
+      <div className="relative mt-3 font-display text-2xl font-semibold tracking-tight tabular md:text-3xl">
         {numeric ? (
           <AnimatedNumber value={value as number} format={format} duration={800} />
         ) : (

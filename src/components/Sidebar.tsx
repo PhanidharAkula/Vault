@@ -121,8 +121,11 @@ const Sidebar = ({
         })}
       </nav>
 
-      {/* Footer · theme toggle + live system clock */}
-      <div className="space-y-3 px-4 pb-6 pt-4">
+      {/* Footer · theme toggle + live system clock.
+          Extra bottom padding on mobile/tablet so the LiveSystem card clears
+          iOS Safari's collapsing bottom toolbar (which eats viewport height
+          even on iPad). Full desktop (`lg+`) keeps the original 24px. */}
+      <div className="space-y-3 px-4 pb-24 pt-4 lg:pb-6">
         <ThemeToggle />
         <LiveSystemCard />
       </div>

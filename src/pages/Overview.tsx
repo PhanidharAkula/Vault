@@ -54,7 +54,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
             updates as time passes.
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-tertiary">
             Final maturity
           </div>
@@ -68,8 +68,9 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
       {/* Hero */}
       <LiveOutstandingHero />
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+      {/* KPI strip — tighter than 3-up at md (820px iPad portrait) makes the
+          values overflow ('L' suffix wraps), so we hold 2-up until lg+. */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Disbursed"
           value={agg.totalDisbursed}

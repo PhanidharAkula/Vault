@@ -80,7 +80,7 @@ const Rates = () => {
     <div className="space-y-6">
       <div>
         <Pill>Rate intelligence</Pill>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
+        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
           Interest rate timeline
         </h1>
         <p className="mt-1 text-sm text-ink-secondary">
@@ -165,16 +165,16 @@ const Rates = () => {
                 )}
               >
                 <div
-                  className="grid h-10 w-10 place-items-center rounded-xl"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
                   style={{ background: `${COLORS[ev.disb]}22`, color: COLORS[ev.disb] }}
                 >
                   <Icon size={16} className={color} />
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="text-[11px] uppercase tracking-[0.12em] text-ink-tertiary">
                     {fmtDateLong(ev.date)}
                   </div>
-                  <div className="mt-0.5 text-sm">
+                  <div className="mt-0.5 break-words text-sm">
                     <span className="font-mono text-ink-secondary">
                       {DISBURSEMENTS[ev.disb].applicationNumber}
                     </span>{' '}
@@ -184,7 +184,11 @@ const Rates = () => {
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
+                {/* Right summary is supplementary — the description already
+                    conveys the key info (e.g. "rate revised to 11.70%"). On
+                    narrow screens we hide it so the row stays readable; at
+                    sm+ it pins to the right with the From → To breakdown. */}
+                <div className="hidden text-right sm:block">
                   {!isInitial && (
                     <>
                       <div className="text-[11px] text-ink-tertiary">From → To</div>

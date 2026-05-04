@@ -24,7 +24,7 @@ const Live = () => {
     <div className="space-y-6">
       <div>
         <Pill tone="emerald">Realtime</Pill>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">Live view</h1>
+        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Live view</h1>
         <p className="mt-1 text-sm text-ink-secondary">
           Outstanding rolls forward each day at{' '}
           <span className="font-semibold text-ink-primary">midnight {tzAbbrev}</span> (New York).
@@ -89,7 +89,7 @@ const Live = () => {
         <SectionTitle
           eyebrow="Countdown"
           title="Next combined payment"
-          description="All tranches share the same due date and time — one timer covers them all."
+          description="All tranches share the same due date and time, one timer covers them all."
         />
         <CombinedCountdown agg={agg} />
       </GlassCard>
@@ -304,7 +304,7 @@ const DayHeartbeat = ({ dailyInterest }: { dailyInterest: number }) => {
         />
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
-        <Block label="Elapsed" value={`${elapsedHours} h`} hint={`${pct.toFixed(1)}% of today`} />
+        <Block label="Elapsed today" value={`${elapsedHours} h`} hint={`${pct.toFixed(1)}% of today`} />
         <Block label="Accrued today" value={formatINR(accrued)} hint={`of ${formatINR(dailyInterest)} daily`} />
         <Block
           label="Remaining today"

@@ -54,7 +54,7 @@ const Schedule = () => {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Pill>Master schedule</Pill>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
+          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
             All payments, every tranche
           </h1>
           <p className="mt-1 text-sm text-ink-secondary">

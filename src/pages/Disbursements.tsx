@@ -57,7 +57,7 @@ const Disbursements = ({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Pill tone={d.color}>{d.shortName}</Pill>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
+          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
             <span className="font-mono text-ink-secondary">{d.applicationNumber}</span>
             <span className="ml-3 text-ink-tertiary">·</span>{' '}
             <span className={clsx('gradient-text-brand')}>
@@ -68,7 +68,7 @@ const Disbursements = ({
             Disbursed {fmtDateLong(d.disbursedDate)} · matures {fmtDateLong(d.finalDate)}
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <div className="text-[11px] uppercase tracking-[0.14em] text-ink-tertiary">
             Active phase
           </div>
@@ -118,8 +118,8 @@ const Disbursements = ({
         })}
       </div>
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+      {/* KPI strip — see Overview.tsx for the rationale on the lg breakpoint. */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Outstanding"
           value={live.currentOutstanding}
