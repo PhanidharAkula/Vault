@@ -49,9 +49,11 @@ export const RateTimeline = ({
             transition={{ duration: 0.4, delay: 0.05 * i }}
             className="rounded-xl border border-white/[0.06] bg-bg-elevated/40 px-3 py-2.5"
           >
-            <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.12em] text-ink-tertiary">
-              <span>Phase {i + 1}</span>
-              <span>{months} mo</span>
+            <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-tertiary">
+              <div className="whitespace-nowrap">Phase {i + 1}</div>
+              <div className="mt-0.5 whitespace-nowrap normal-case tracking-normal text-ink-secondary">
+                {months} {months === 1 ? 'Month' : 'Months'}
+              </div>
             </div>
             <div
               className="mt-1.5 font-display text-lg font-semibold tabular"
