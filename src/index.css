@@ -1,0 +1,338 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ────────────────────────────────────────────────────────────────────────
+     Theme tokens.  Stored as space-separated RGB triplets so they can be
+     consumed by Tailwind's `rgb(var(--x) / <alpha-value>)` syntax — that's
+     what makes `bg-bg-base/50` etc. still work.
+     ──────────────────────────────────────────────────────────────────────── */
+
+  :root,
+  [data-theme='light'] {
+    /* surfaces */
+    --bg-base: 247 248 251;        /* #f7f8fb */
+    --bg-surface: 255 255 255;     /* #ffffff */
+    --bg-elevated: 255 255 255;    /* #ffffff */
+    --bg-border: 226 230 236;      /* #e2e6ec */
+
+    /* ink */
+    --ink-primary: 14 17 26;       /* #0e111a */
+    --ink-secondary: 76 84 99;     /* #4c5463 */
+    --ink-tertiary: 117 124 139;   /* #757c8b */
+    --ink-muted: 156 163 175;      /* #9ca3af */
+
+    /* overlay color (for bg-white/[…] & border-white/[…] overrides below) */
+    --overlay-rgb: 14, 17, 26;
+
+    /* progress ring track */
+    --ring-track: rgba(14, 17, 26, 0.10);
+
+    /* glass card */
+    --glass-bg-1: rgba(255, 255, 255, 0.92);
+    --glass-bg-2: rgba(255, 255, 255, 0.65);
+    --glass-bg-base: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(14, 17, 26, 0.08);
+    --glass-border-hover: rgba(14, 17, 26, 0.16);
+
+    /* mesh background */
+    --mesh-opacity: 0.4;
+    --grid-line-rgb: 14, 17, 26;
+    --grid-line-alpha: 0.04;
+
+    /* recharts */
+    --chart-axis: rgba(14, 17, 26, 0.18);
+    --chart-grid: rgba(14, 17, 26, 0.07);
+    --chart-tick: #6b7280;
+
+    /* misc */
+    --select-bg: rgba(99, 102, 241, 0.18);
+    --scrollbar-thumb: rgba(14, 17, 26, 0.12);
+    --scrollbar-thumb-hover: rgba(14, 17, 26, 0.22);
+
+    color-scheme: light;
+  }
+
+  [data-theme='dark'] {
+    /* surfaces */
+    --bg-base: 7 8 13;            /* #07080d */
+    --bg-surface: 13 15 23;       /* #0d0f17 */
+    --bg-elevated: 19 22 31;      /* #13161f */
+    --bg-border: 31 35 48;        /* #1f2330 */
+
+    /* ink */
+    --ink-primary: 245 247 251;   /* #f5f7fb */
+    --ink-secondary: 155 163 180; /* #9ba3b4 */
+    --ink-tertiary: 92 100 120;   /* #5c6478 */
+    --ink-muted: 58 64 85;        /* #3a4055 */
+
+    --overlay-rgb: 255, 255, 255;
+
+    /* progress ring track */
+    --ring-track: rgba(255, 255, 255, 0.06);
+
+    /* glass */
+    --glass-bg-1: rgba(255, 255, 255, 0.025);
+    --glass-bg-2: rgba(255, 255, 255, 0.005);
+    --glass-bg-base: rgba(13, 15, 23, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-hover: rgba(255, 255, 255, 0.12);
+
+    /* mesh */
+    --mesh-opacity: 0.9;
+    --grid-line-rgb: 255, 255, 255;
+    --grid-line-alpha: 0.025;
+
+    /* recharts */
+    --chart-axis: rgba(255, 255, 255, 0.08);
+    --chart-grid: rgba(255, 255, 255, 0.04);
+    --chart-tick: #5c6478;
+
+    /* misc */
+    --select-bg: rgba(99, 102, 241, 0.35);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.06);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.12);
+
+    color-scheme: dark;
+  }
+
+  /* Use min-height so the page background paints all the way down even when
+     content is taller than the viewport.  `height: 100%` was causing the bg
+     to band at every 100vh boundary because the body box was clipped to the
+     viewport while content overflowed past it. */
+  html, body, #root {
+    min-height: 100%;
+  }
+  html, body {
+    /* Belt-and-braces cap so an oversized child (e.g. a Recharts SVG that
+       hasn't measured the parent yet on first paint) can never produce a
+       horizontal scroll on mobile. Local overflow-x: auto containers still
+       work because they create their own scroll context. */
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+  body {
+    @apply bg-bg-base text-ink-primary font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss02';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 200ms ease;
+    /* App is read-only — no text selection / copy / iOS touch callout. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    cursor: default;
+    /* Prevent any rogue wide child from horizontally scrolling the whole page.
+       Local overflow-x:auto wrappers (e.g. amortization tables) still scroll
+       within their own containers. */
+    overflow-x: clip;
+  }
+  /* Pointer cursor on anything actionable. */
+  button:not(:disabled),
+  a,
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  label[for],
+  select {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+  /* Text inputs still need an I-beam cursor and selection so users can type,
+     edit and select within them. */
+  input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']),
+  textarea {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+  }
+  ::selection {
+    background: var(--select-bg);
+  }
+  /* Hide scrollbars completely (Webkit + Firefox + legacy IE/Edge) but keep
+     scrolling functional. */
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+}
+
+@layer components {
+  .glass {
+    background:
+      linear-gradient(180deg, var(--glass-bg-1) 0%, var(--glass-bg-2) 100%),
+      var(--glass-bg-base);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .glass-strong {
+    background:
+      linear-gradient(180deg, var(--glass-bg-1) 0%, var(--glass-bg-2) 100%),
+      var(--glass-bg-base);
+    border: 1px solid var(--glass-border-hover);
+  }
+  .glass-hover {
+    transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+  }
+  .glass-hover:hover {
+    border-color: var(--glass-border-hover);
+  }
+  .gradient-text-brand {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gradient-text-cyan {
+    background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gradient-text-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  /* Dark theme uses lighter gradients (more contrast on dark bg) */
+  [data-theme='dark'] .gradient-text-brand {
+    background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  [data-theme='dark'] .gradient-text-cyan {
+    background: linear-gradient(135deg, #67e8f9 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  [data-theme='dark'] .gradient-text-emerald {
+    background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .ring-soft {
+    box-shadow: 0 0 0 1px var(--glass-border);
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(var(--grid-line-rgb), var(--grid-line-alpha)) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(var(--grid-line-rgb), var(--grid-line-alpha)) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-position: -1px -1px;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme-aware overrides for the existing dark-only Tailwind utilities.
+   Many components use `bg-white/[0.04]`, `border-white/[0.06]` etc. — those
+   look right on a dark surface but become invisible on a light one.  We
+   leave the JSX untouched and just remap those classes via CSS variable
+   so they invert to a translucent dark colour in light mode.
+   ──────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  [data-theme='light'] .bg-white\/\[0\.02\] { background-color: rgba(var(--overlay-rgb), 0.025); }
+  [data-theme='light'] .bg-white\/\[0\.03\] { background-color: rgba(var(--overlay-rgb), 0.04); }
+  [data-theme='light'] .bg-white\/\[0\.04\] { background-color: rgba(var(--overlay-rgb), 0.05); }
+  [data-theme='light'] .bg-white\/\[0\.05\] { background-color: rgba(var(--overlay-rgb), 0.06); }
+  [data-theme='light'] .bg-white\/\[0\.06\] { background-color: rgba(var(--overlay-rgb), 0.07); }
+  [data-theme='light'] .bg-white\/\[0\.08\] { background-color: rgba(var(--overlay-rgb), 0.10); }
+
+  [data-theme='light'] .border-white\/\[0\.03\] { border-color: rgba(var(--overlay-rgb), 0.06); }
+  [data-theme='light'] .border-white\/\[0\.04\] { border-color: rgba(var(--overlay-rgb), 0.07); }
+  [data-theme='light'] .border-white\/\[0\.05\] { border-color: rgba(var(--overlay-rgb), 0.08); }
+  [data-theme='light'] .border-white\/\[0\.06\] { border-color: rgba(var(--overlay-rgb), 0.10); }
+  [data-theme='light'] .border-white\/\[0\.08\] { border-color: rgba(var(--overlay-rgb), 0.12); }
+  [data-theme='light'] .border-white\/\[0\.10\] { border-color: rgba(var(--overlay-rgb), 0.14); }
+  [data-theme='light'] .border-white\/\[0\.12\] { border-color: rgba(var(--overlay-rgb), 0.18); }
+  [data-theme='light'] .border-white\/10 { border-color: rgba(var(--overlay-rgb), 0.14); }
+
+  /* hover:border variants */
+  [data-theme='light'] .hover\:border-white\/\[0\.06\]:hover { border-color: rgba(var(--overlay-rgb), 0.12); }
+  [data-theme='light'] .hover\:border-white\/\[0\.08\]:hover { border-color: rgba(var(--overlay-rgb), 0.16); }
+  [data-theme='light'] .hover\:border-white\/\[0\.10\]:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+  [data-theme='light'] .hover\:border-white\/\[0\.12\]:hover { border-color: rgba(var(--overlay-rgb), 0.24); }
+  [data-theme='light'] .hover\:border-white\/10:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+
+  [data-theme='light'] .ring-white\/5 { --tw-ring-color: rgba(var(--overlay-rgb), 0.08); }
+  [data-theme='light'] .ring-white\/10 { --tw-ring-color: rgba(var(--overlay-rgb), 0.12); }
+  [data-theme='light'] .ring-white\/\[0\.08\] { --tw-ring-color: rgba(var(--overlay-rgb), 0.10); }
+
+  /* hover variants */
+  [data-theme='light'] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(var(--overlay-rgb), 0.025); }
+  [data-theme='light'] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(var(--overlay-rgb), 0.05); }
+  [data-theme='light'] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(var(--overlay-rgb), 0.06); }
+  [data-theme='light'] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(var(--overlay-rgb), 0.07); }
+
+  /* divide-* using white */
+  [data-theme='light'] .divide-white\/\[0\.03\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.06); }
+  [data-theme='light'] .divide-white\/\[0\.04\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.07); }
+  [data-theme='light'] .divide-white\/\[0\.05\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.08); }
+  [data-theme='light'] .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.10); }
+
+  /* Amber loses contrast on white — the dark-mode `#fbbf24` becomes a pale
+     wash on a light surface. Remap to amber-700 (`#b45309`) in light mode so
+     the text and pill chrome stay legible. */
+  [data-theme='light'] .text-accent-amber { color: #b45309; }
+  [data-theme='light'] .bg-accent-amber\/10 { background-color: rgba(180, 83, 9, 0.10); }
+  [data-theme='light'] .bg-accent-amber\/15 { background-color: rgba(180, 83, 9, 0.15); }
+  [data-theme='light'] .border-accent-amber\/25 { border-color: rgba(180, 83, 9, 0.30); }
+  [data-theme='light'] .border-accent-amber\/30 { border-color: rgba(180, 83, 9, 0.35); }
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Recharts overrides — uses CSS variables so colours flip with the theme.
+   ──────────────────────────────────────────────────────────────────────── */
+.recharts-tooltip-cursor {
+  stroke: var(--chart-axis) !important;
+  stroke-dasharray: 4 4 !important;
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-axis) !important;
+}
+.recharts-cartesian-grid line {
+  stroke: var(--chart-grid) !important;
+}
+.recharts-text.recharts-cartesian-axis-tick-value {
+  fill: var(--chart-tick) !important;
+  font-size: 11px !important;
+}
+.recharts-default-legend {
+  font-size: 12px !important;
+}
+.recharts-surface:focus {
+  outline: none !important;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pulse ring — used by the Live view PulseVisualizer. */
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.55); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 2.4s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
