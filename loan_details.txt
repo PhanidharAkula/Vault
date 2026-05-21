@@ -1,7 +1,7 @@
 Loan Details
 
 Application Number	A8637744070
-Applicant Name	-
+Applicant Name	Phanidhar Akula
 Loan Disbursed Amount	2,500,000.00
 Loan Disbursed Date	16/07/2024
 Tenure	168 months	Effective Tenure	168 months	Rate of Interest	11.5% p.a.
@@ -194,7 +194,7 @@ Sr.No.	Due Date	Payment Due	Interest	Principal	Interest Accrued	Total Outstandin
 168	11/7/2038	38,649	364	38,285	0	0
 
 Application Number	A8637744070_2
-Applicant Name	-
+Applicant Name	Phanidhar Akula
 Loan Disbursed Amount	1,500,000.00
 Loan Disbursed Date	13/12/2024
 Tenure	166.974 months	Effective Tenure	166.974 months	Rate of Interest	11.7% p.a.
@@ -377,7 +377,7 @@ Sr.No.	Due Date	Payment Due	Interest	Principal	Interest Accrued	Total Outstandin
 163	11/7/2038	22,275	210	22,065	0	1
 
 Application Number	A8637744070_3
-Applicant Name	-
+Applicant Name	Phanidhar Akula
 Loan Disbursed Amount	1,500,000.00
 Loan Disbursed Date	01/08/2025
 Tenure	156.4069 months	Effective Tenure	156.4069 months	Rate of Interest	11.5% p.a.
@@ -547,7 +547,7 @@ Sr.No.	Due Date	Payment Due	Interest	Principal	Interest Accrued	Total Outstandin
 155	11/6/2038	24,569	426	24,143	0	20,663
 156	11/7/2038	20,859	196	20,663	0	0
 Application Number	A8637744070_4
-Applicant Name	-
+Applicant Name	Phanidhar Akula
 Loan Disbursed Amount	500,000.00
 Loan Disbursed Date	20/05/2026
 Tenure	144.8455 months	Effective Tenure	144.8455 months	Rate of Interest	11.4% p.a.

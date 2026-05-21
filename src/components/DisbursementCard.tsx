@@ -53,7 +53,6 @@ export const DisbursementCard = ({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -2 }}
       className={`glass glass-hover group relative overflow-hidden rounded-2xl p-5 text-left ${COLOR_GLOW[d.color]}`}
     >
       {/* soft tone wash — no hard edges */}
@@ -74,7 +73,7 @@ export const DisbursementCard = ({
           </div>
           <ArrowUpRight
             size={16}
-            className="translate-y-0 text-ink-tertiary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            className="translate-y-0 text-ink-tertiary transition-[transform,color] duration-200 ease-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-ink-primary"
           />
         </div>
 

@@ -4,21 +4,22 @@ import { Activity, CalendarClock, Sparkles } from 'lucide-react'
 import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 import type { AggregateStatus } from '../lib/calculations'
 import { computeAggregate, computeLiveStatus } from '../lib/calculations'
 import { DISBURSEMENTS } from '../data/loanData'
 import { formatINR, formatINRCompact } from '../lib/format'
 import { fmtDateLong } from '../lib/dates'
-import { clockInZone, zoneMidnight, zoneShortName } from '../lib/timezone'
+import { clockInZone, zoneMidnight } from '../lib/timezone'
 import { differenceInSeconds } from 'date-fns'
 
 const Live = () => {
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so currency toggle re-renders the ticker + accrual stats
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
   const ratePerSec = agg.totalDailyInterest / 86400
   const todayOutstanding = Math.round(agg.totalCurrentOutstanding)
-  const tzAbbrev = zoneShortName()
 
   return (
     <div className="space-y-6">
@@ -26,9 +27,8 @@ const Live = () => {
         <Pill tone="emerald">Realtime</Pill>
         <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Live view</h1>
         <p className="mt-1 text-sm text-ink-secondary">
-          Outstanding rolls forward each day at{' '}
-          <span className="font-semibold text-ink-primary">midnight {tzAbbrev}</span> (New York).
-          The accrual rates below show how fast it grows in the background.
+          Outstanding rolls forward each day at midnight. The accrual rates below show how fast it
+          grows in the background.
         </p>
       </div>
 
@@ -213,7 +213,7 @@ const CombinedCountdown = ({ agg }: { agg: AggregateStatus }) => {
     )
   }
 
-  // Countdown is to midnight ET on the due date
+  // Countdown is to midnight IST on the due date (bank's processing boundary)
   const dueDate = zoneMidnight(agg.nextDueDate)
   const totalSec = Math.max(0, differenceInSeconds(dueDate, new Date()))
   const days = Math.floor(totalSec / 86400)
@@ -286,7 +286,8 @@ const DayHeartbeat = ({ dailyInterest }: { dailyInterest: number }) => {
     const id = setInterval(() => setNow(new Date()), 30000)
     return () => clearInterval(id)
   }, [])
-  // Use America/New_York clock for the day-elapsed calculation
+  // Use IST clock for the day-elapsed calculation — the "day" begins/ends at
+  // midnight IST (the bank's day boundary), so the heartbeat fills accordingly.
   const c = clockInZone(undefined, now)
   const totalSecondsInDay = 86400
   const elapsedSec = c.hour * 3600 + c.minute * 60 + c.second

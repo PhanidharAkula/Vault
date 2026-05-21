@@ -1,10 +1,13 @@
-// All "today" calculations across the dashboard are anchored to America/New_York (ET).
-// The day rolls over at midnight ET regardless of where the browser is running.
-const APP_TZ = 'America/New_York'
+// Every helper here works in the browser's local timezone by default. The
+// dashboard's "today" rolls when the user's wall clock crosses midnight, and
+// the countdown to the next payment is to midnight of the user's local zone.
+//
+// All helpers still accept an optional `tz` argument for advanced uses, but
+// no caller in this app currently overrides it.
 
-const partsOf = (d: Date, tz: string) =>
+const partsOf = (d: Date, tz?: string) =>
   new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
+    timeZone: tz, // undefined => browser local zone
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -19,15 +22,15 @@ const partsOf = (d: Date, tz: string) =>
       return acc
     }, {})
 
-// Returns YYYY-MM-DD calendar date in the given timezone for a given Date.
-export const todayInZone = (tz: string = APP_TZ, d: Date = new Date()): string => {
+// Returns YYYY-MM-DD calendar date in the given timezone (default: local).
+export const todayInZone = (tz?: string, d: Date = new Date()): string => {
   const p = partsOf(d, tz)
   return `${p.year}-${p.month}-${p.day}`
 }
 
-// Returns local hour/minute/second components in the given timezone.
+// Returns hour/minute/second components in the given timezone (default: local).
 export const clockInZone = (
-  tz: string = APP_TZ,
+  tz?: string,
   d: Date = new Date(),
 ): { hour: number; minute: number; second: number } => {
   const p = partsOf(d, tz)
@@ -35,9 +38,8 @@ export const clockInZone = (
   return { hour, minute: Number(p.minute), second: Number(p.second) }
 }
 
-// Returns the offset (UTC - tz) in milliseconds at the given moment.
-// e.g. for NY in EDT this returns +4h (14_400_000); in EST it returns +5h (18_000_000).
-const offsetMs = (tz: string, d: Date): number => {
+// Offset (UTC - tz) in milliseconds at the given moment.
+const offsetMs = (tz: string | undefined, d: Date): number => {
   const p = partsOf(d, tz)
   const tzAsIfUtc = Date.UTC(
     Number(p.year),
@@ -51,23 +53,26 @@ const offsetMs = (tz: string, d: Date): number => {
 }
 
 // Returns a Date instant whose representation in `tz` is exactly "YYYY-MM-DD 00:00:00".
-export const zoneMidnight = (yyyy_mm_dd: string, tz: string = APP_TZ): Date => {
+// Default tz = local, so the countdown to a due date is to midnight in the
+// user's own timezone.
+export const zoneMidnight = (yyyy_mm_dd: string, tz?: string): Date => {
   const probe = new Date(yyyy_mm_dd + 'T00:00:00Z')
   const off = offsetMs(tz, probe)
   return new Date(probe.getTime() + off)
 }
 
-// Format clock time (HH:MM:SS) in the given timezone.
-export const clockString = (tz: string = APP_TZ, d: Date = new Date()): string => {
+// Format clock time (HH:MM:SS) in the given timezone (default: local).
+export const clockString = (tz?: string, d: Date = new Date()): string => {
   const c = clockInZone(tz, d)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${pad(c.hour)}:${pad(c.minute)}:${pad(c.second)}`
 }
 
-// Short timezone label e.g. "EDT" or "EST"
-export const zoneShortName = (tz: string = APP_TZ, d: Date = new Date()): string => {
+// Short timezone label e.g. "IST", "EDT", "PST" — defaults to the browser's
+// local zone abbreviation.
+export const zoneShortName = (tz?: string, d: Date = new Date()): string => {
   const part = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
     .formatToParts(d)
     .find((p) => p.type === 'timeZoneName')
-  return part?.value ?? 'ET'
+  return part?.value ?? ''
 }

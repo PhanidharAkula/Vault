@@ -10,6 +10,7 @@ import LivePage from './pages/Live'
 import AnalyticsPage from './pages/Analytics'
 import { TodayProvider } from './state/today'
 import { ThemeProvider, useTheme } from './state/theme'
+import { CurrencyProvider } from './state/currency'
 
 const VALID_ROUTES: RouteKey[] = ['overview', 'disbursements', 'schedule', 'rates', 'live', 'analytics']
 
@@ -201,9 +202,11 @@ const MobileThemeButton = () => {
 export default function App() {
   return (
     <ThemeProvider>
-      <TodayProvider>
-        <PageRouter />
-      </TodayProvider>
+      <CurrencyProvider>
+        <TodayProvider>
+          <PageRouter />
+        </TodayProvider>
+      </CurrencyProvider>
     </ThemeProvider>
   )
 }

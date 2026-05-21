@@ -3,7 +3,8 @@ import type { ReactNode } from 'react'
 import { todayInZone } from '../lib/timezone'
 
 // Two separate contexts so consumers don't re-render every second when they
-// only care about the calendar date (which only changes at midnight ET).
+// only care about the calendar date (which only changes at midnight IST, the
+// bank's processing boundary — see `lib/timezone.ts`).
 //
 // - useTodayIso()  → string   — re-renders only when the day rolls over
 // - useNow()       → Date     — re-renders every second (for clocks/tickers)

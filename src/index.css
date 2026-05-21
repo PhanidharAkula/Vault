@@ -178,8 +178,13 @@
   .glass-hover {
     transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
   }
-  .glass-hover:hover {
-    border-color: var(--glass-border-hover);
+  /* Only fire on devices that can actually hover (mice/trackpads). Touch
+     devices report `hover: none`, so tapping a card on a phone doesn't get
+     stuck in the hover state. */
+  @media (hover: hover) {
+    .glass-hover:hover {
+      border-color: var(--glass-border-hover);
+    }
   }
   .gradient-text-brand {
     background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
@@ -264,22 +269,27 @@
   [data-theme='light'] .border-white\/\[0\.12\] { border-color: rgba(var(--overlay-rgb), 0.18); }
   [data-theme='light'] .border-white\/10 { border-color: rgba(var(--overlay-rgb), 0.14); }
 
-  /* hover:border variants */
-  [data-theme='light'] .hover\:border-white\/\[0\.06\]:hover { border-color: rgba(var(--overlay-rgb), 0.12); }
-  [data-theme='light'] .hover\:border-white\/\[0\.08\]:hover { border-color: rgba(var(--overlay-rgb), 0.16); }
-  [data-theme='light'] .hover\:border-white\/\[0\.10\]:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
-  [data-theme='light'] .hover\:border-white\/\[0\.12\]:hover { border-color: rgba(var(--overlay-rgb), 0.24); }
-  [data-theme='light'] .hover\:border-white\/10:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+  /* hover:border variants — only fire on hover-capable devices so touch taps
+     don't get stuck in the hovered state. */
+  @media (hover: hover) {
+    [data-theme='light'] .hover\:border-white\/\[0\.06\]:hover { border-color: rgba(var(--overlay-rgb), 0.12); }
+    [data-theme='light'] .hover\:border-white\/\[0\.08\]:hover { border-color: rgba(var(--overlay-rgb), 0.16); }
+    [data-theme='light'] .hover\:border-white\/\[0\.10\]:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+    [data-theme='light'] .hover\:border-white\/\[0\.12\]:hover { border-color: rgba(var(--overlay-rgb), 0.24); }
+    [data-theme='light'] .hover\:border-white\/10:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+  }
 
   [data-theme='light'] .ring-white\/5 { --tw-ring-color: rgba(var(--overlay-rgb), 0.08); }
   [data-theme='light'] .ring-white\/10 { --tw-ring-color: rgba(var(--overlay-rgb), 0.12); }
   [data-theme='light'] .ring-white\/\[0\.08\] { --tw-ring-color: rgba(var(--overlay-rgb), 0.10); }
 
-  /* hover variants */
-  [data-theme='light'] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(var(--overlay-rgb), 0.025); }
-  [data-theme='light'] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(var(--overlay-rgb), 0.05); }
-  [data-theme='light'] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(var(--overlay-rgb), 0.06); }
-  [data-theme='light'] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(var(--overlay-rgb), 0.07); }
+  /* hover variants — gated to hover-capable devices (same reason). */
+  @media (hover: hover) {
+    [data-theme='light'] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(var(--overlay-rgb), 0.025); }
+    [data-theme='light'] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(var(--overlay-rgb), 0.05); }
+    [data-theme='light'] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(var(--overlay-rgb), 0.06); }
+    [data-theme='light'] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(var(--overlay-rgb), 0.07); }
+  }
 
   /* divide-* using white */
   [data-theme='light'] .divide-white\/\[0\.03\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.06); }

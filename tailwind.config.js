@@ -1,6 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  // Scope every `hover:*` utility to `@media (hover: hover)`. Touch devices
+  // (where the OS reports no hover capability) skip hover styles entirely, so
+  // tapping a card on a phone doesn't briefly trigger a hover flash.
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
       fontFamily: {

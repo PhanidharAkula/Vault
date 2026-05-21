@@ -20,9 +20,12 @@ import { DISBURSEMENTS, MASTER } from '../data/loanData'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
 import { fmtDateLong, formatRelative, tenureToYM, monthsBetween } from '../lib/dates'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 
 const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => void }) => {
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so the currency toggle triggers a re-render of all formatINR calls
+
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
   const totalCostOfLoan = agg.totalPlannedPayment
@@ -62,7 +65,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
             Welcome back, <span className="gradient-text-brand">{MASTER.applicantName.split(' ')[0]}</span>
           </h1>
           <p className="mt-1 text-sm text-ink-secondary">
-            Here is the live state of your loan{' '}
+            Live state of loan{' '}
             <span className="font-mono text-ink-primary">{MASTER.applicationNumber}</span>. Every metric
             updates as time passes.
           </p>
@@ -292,9 +295,9 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
       >
         <Insight
           eyebrow="Cost ratio"
-          title={`₹${(agg.totalPlannedInterest / 1e5).toFixed(1)} L`}
+          title={formatINRCompact(agg.totalPlannedInterest)}
           subtitle="lifetime interest"
-          body={`You'll pay ${formatINRCompact(agg.totalPlannedInterest)} in interest over the loan's lifetime, roughly ${(agg.totalPlannedInterest / agg.totalDisbursed * 100).toFixed(0)}% of the principal disbursed.`}
+          body={`${formatINRCompact(agg.totalPlannedInterest)} in total interest charges over the loan's lifetime — roughly ${(agg.totalPlannedInterest / agg.totalDisbursed * 100).toFixed(0)}% of the principal disbursed.`}
         />
         <Insight
           eyebrow="EMI horizon"
@@ -306,7 +309,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           eyebrow="Burn rate"
           title={formatINR(Math.round(agg.totalDailyInterest * 30))}
           subtitle="interest / month"
-          body={`At today's outstanding, you're accruing roughly ${formatINRCompact(agg.totalDailyInterest)} per day, or ${formatINRCompact(agg.totalDailyInterest * 30)} every month.`}
+          body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day, or ${formatINRCompact(agg.totalDailyInterest * 30)} every month.`}
         />
       </motion.div>
     </div>

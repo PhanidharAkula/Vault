@@ -3,7 +3,6 @@ import type { Disbursement, RatePeriod, SchedulePayment } from './loanData.gener
 
 export type { Disbursement, RatePeriod, SchedulePayment }
 
-const PLACEHOLDER_NAME = 'Aarav Sharma'
 // Color is assigned by tranche index. Add more colors here as new tranches
 // are added — must stay in sync with switch sites that paint dot/pill colors
 // (search the codebase for `color === 'violet'` for the touchpoints).
@@ -51,7 +50,6 @@ const buildView = (d: Disbursement, idx: number): DisbursementView => {
 
   return {
     ...d,
-    applicantName: d.applicantName || PLACEHOLDER_NAME,
     shortName,
     label,
     color: COLORS[idx] ?? 'violet',
@@ -71,7 +69,7 @@ export const DISBURSEMENTS: DisbursementView[] = RAW_DISBURSEMENTS.map(buildView
 // Master account: aggregates every tranche under a single roll-up view.
 export const MASTER = {
   applicationNumber: DISBURSEMENTS[0].applicationNumber,
-  applicantName: PLACEHOLDER_NAME,
+  applicantName: DISBURSEMENTS[0].applicantName,
   totalDisbursed: DISBURSEMENTS.reduce((s, d) => s + d.disbursedAmount, 0),
   firstDisbursedDate: DISBURSEMENTS.reduce(
     (earliest, d) => (d.disbursedDate < earliest ? d.disbursedDate : earliest),

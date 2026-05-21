@@ -15,6 +15,7 @@ import { fmtDateLong } from '../lib/dates'
 import { clockString, zoneShortName } from '../lib/timezone'
 import { useNow, useTodayIso } from '../state/today'
 import { useTheme } from '../state/theme'
+import { useCurrency } from '../state/currency'
 
 export type RouteKey = 'overview' | 'disbursements' | 'schedule' | 'rates' | 'live' | 'analytics'
 
@@ -127,6 +128,7 @@ const Sidebar = ({
           even on iPad). Full desktop (`lg+`) keeps the original 24px. */}
       <div className="space-y-3 px-4 pb-14 pt-4 lg:pb-6">
         <ThemeToggle />
+        <CurrencyToggle />
         <LiveSystemCard />
       </div>
     </aside>
@@ -176,9 +178,61 @@ const ThemeToggle = () => {
   )
 }
 
+const CurrencyToggle = () => {
+  const { currency, toggle, rate } = useCurrency()
+  const isUSD = currency === 'USD'
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={`Display amounts in ${isUSD ? 'INR' : 'USD'}`}
+        title={`1 USD ≈ ₹${rate.toFixed(2)} — calculations stay in INR`}
+        className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-1.5 text-sm transition hover:border-white/[0.12]"
+      >
+        {/* Sliding pill — brand-violet for USD on the left, emerald for INR
+            (the source of truth) on the right. */}
+        <motion.div
+          layout
+          transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+          className={clsx(
+            'absolute top-1.5 bottom-1.5 w-[calc(50%-0.5rem)] rounded-xl',
+            isUSD
+              ? 'left-1.5 bg-gradient-to-br from-brand-500/30 to-accent-cyan/30 ring-1 ring-white/10'
+              : 'right-1.5 bg-gradient-to-br from-accent-emerald/30 to-accent-cyan/20 ring-1 ring-accent-emerald/30',
+          )}
+        />
+        <div
+          className={clsx(
+            'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
+            isUSD ? 'text-ink-primary' : 'text-ink-tertiary',
+          )}
+        >
+          <span className="font-mono text-[13px] font-semibold leading-none">$</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">USD</span>
+        </div>
+        <div
+          className={clsx(
+            'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
+            isUSD ? 'text-ink-tertiary' : 'text-accent-emerald',
+          )}
+        >
+          <span className="font-mono text-[13px] font-semibold leading-none">₹</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">INR</span>
+        </div>
+      </button>
+      {/* Surface the actual rate + provenance so the conversion is auditable. */}
+      <div className="mt-1.5 px-1 text-center text-[10px] tracking-wide text-ink-tertiary">
+        1 USD ≈ ₹{rate.toFixed(2)} 
+      </div>
+    </div>
+  )
+}
+
 const LiveSystemCard = () => {
   const todayIso = useTodayIso()
   const now = useNow()
+  // Everything in the dashboard rolls forward on the browser's local clock.
   const time = clockString(undefined, now)
   const tz = zoneShortName(undefined, now)
 
@@ -198,7 +252,7 @@ const LiveSystemCard = () => {
         </span>
       </div>
       <div className="mt-2.5 border-t border-white/[0.05] pt-2.5 text-[11px] leading-relaxed text-ink-tertiary">
-        Outstanding rolls forward at midnight {tz}. No refresh needed.
+        Values roll forward at midnight. No refresh needed.
       </div>
     </div>
   )

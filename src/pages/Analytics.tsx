@@ -5,6 +5,7 @@ import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
 import { DrawBar } from '../components/ui/DrawBar'
 import { DISBURSEMENTS, MASTER } from '../data/loanData'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 import { useTheme } from '../state/theme'
 import { useChartTick } from '../lib/useChartTick'
 import { computeAggregate } from '../lib/calculations'
@@ -16,6 +17,7 @@ const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 const Analytics = () => {
   useChartTick()
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so currency toggle re-renders all aggregates + charts
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
   // All chart data is memoized so Recharts doesn't restart its animations
@@ -90,7 +92,7 @@ const Analytics = () => {
         <Pill tone="cyan">Insights</Pill>
         <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Analytics</h1>
         <p className="mt-1 text-sm text-ink-secondary">
-          The story behind the numbers. Who you owe what, and where it's headed.
+          The story behind the numbers. What is owed where, and where it's headed.
         </p>
       </div>
 
@@ -101,7 +103,7 @@ const Analytics = () => {
           title={formatINRCompact(agg.totalPlannedInterest)}
           subtitle={`${interestPctOfPrincipal.toFixed(0)}% of principal`}
           color="rose"
-          body={`Across all ${DISBURSEMENTS.length} tranches, you'll pay ${formatINR(agg.totalPlannedInterest)} in interest by ${fmtDateLong(MASTER.finalMaturity)}.`}
+          body={`Total interest charges of ${formatINR(agg.totalPlannedInterest)} across all ${DISBURSEMENTS.length} tranches by ${fmtDateLong(MASTER.finalMaturity)}.`}
         />
         <Headline
           eyebrow="Tenure horizon"
@@ -115,7 +117,7 @@ const Analytics = () => {
           title={formatINR(combinedEmi)}
           subtitle={earliestEmi ? `from ${fmtDateLong(earliestEmi)}` : ''}
           color="emerald"
-          body={`Once the moratorium ends, you'll pay a combined EMI of ${formatINR(combinedEmi)} every month until ${fmtDateLong(MASTER.finalMaturity)}.`}
+          body={`After the moratorium ends, the combined EMI is ${formatINR(combinedEmi)} per month until ${fmtDateLong(MASTER.finalMaturity)}.`}
         />
       </div>
 
@@ -186,13 +188,13 @@ const Analytics = () => {
               })}
               <div className="rounded-lg border border-white/[0.06] bg-bg-elevated/40 p-3 text-xs text-ink-secondary">
                 <div className="text-[10px] uppercase tracking-[0.12em] text-ink-tertiary">Insight</div>
-                You'll spend roughly{' '}
+                Roughly{' '}
                 <span className="font-semibold text-accent-rose">
-                  ₹{(agg.totalPlannedInterest / 1e5).toFixed(1)} L
+                  {formatINRCompact(agg.totalPlannedInterest)}
                 </span>{' '}
-                in interest charges to access{' '}
+                in interest charges for{' '}
                 <span className="font-semibold text-accent-emerald">
-                  ₹{(agg.totalDisbursed / 1e5).toFixed(1)} L
+                  {formatINRCompact(agg.totalDisbursed)}
                 </span>{' '}
                 of principal.
               </div>
@@ -332,8 +334,9 @@ const Analytics = () => {
             })}
             <div className="rounded-lg border border-white/[0.06] bg-bg-elevated/40 p-3 text-xs text-ink-secondary">
               <div className="text-[10px] uppercase tracking-[0.12em] text-ink-tertiary">Why it matters</div>
-              The pre-EMI part-interest you pay is a fraction of what's actually charged each month. The unpaid
-              difference accrues into the outstanding balance, which then earns interest itself.
+              The pre-EMI part-interest paid each month covers only a fraction of what's actually
+              charged. The unpaid difference accrues into the outstanding balance, which then earns
+              interest itself.
             </div>
           </div>
         </div>
@@ -343,7 +346,7 @@ const Analytics = () => {
       <GlassCard pad="lg">
         <SectionTitle
           eyebrow="Progress"
-          title="Where you stand right now"
+          title="Where things stand now"
           description="Tenure used, payments cleared, and outstanding consumed, at a glance."
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">

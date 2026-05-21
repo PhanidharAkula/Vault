@@ -14,6 +14,7 @@ import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
 import { StatCard } from '../components/ui/StatCard'
 import { DISBURSEMENTS } from '../data/loanData'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 import { computeLiveStatus } from '../lib/calculations'
 import { SingleOutstandingChart } from '../components/charts/SingleOutstandingChart'
 import { PaymentBreakdownChart } from '../components/charts/PaymentBreakdownChart'
@@ -38,6 +39,7 @@ const Disbursements = ({
   onConsumeInitial: () => void
 }) => {
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so the currency toggle re-renders all money displays
   const [activeIdx, setActiveIdx] = useState(0)
 
   useEffect(() => {
@@ -215,7 +217,7 @@ const Disbursements = ({
         <SectionTitle
           eyebrow="Per payment"
           title="Interest vs principal across the schedule"
-          description="In the pre-EMI phase you pay only part of the monthly interest; the rest accrues. Once the EMI begins, principal repayment kicks in."
+          description="During the pre-EMI phase, only part of the monthly interest is paid in cash; the rest accrues. Once the EMI begins, principal repayment kicks in."
           right={
             <div className="flex items-center gap-3 text-[11px] text-ink-tertiary">
               <Legend dot="bg-accent-rose" label="Interest" />

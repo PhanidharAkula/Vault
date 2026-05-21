@@ -8,12 +8,14 @@
     <meta name="color-scheme" content="light dark" />
     <title>Vault Intelligence</title>
     <script>
-      // Read persisted theme before React boots so we don't flash the wrong palette.
-      // `?theme=dark|light` overrides storage (handy for sharing a screenshot).
+      // Read persisted theme + currency before React boots. URL params override
+      // localStorage (handy for sharing a screenshot or testing).
       try {
-        var u = new URL(location).searchParams.get('theme')
-        var t = u || localStorage.getItem('vault.theme')
+        var params = new URL(location).searchParams
+        var t = params.get('theme') || localStorage.getItem('vault.theme')
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+        var c = params.get('currency')
+        if (c === 'INR' || c === 'USD') localStorage.setItem('vault.currency', c)
       } catch (e) {}
     </script>
   </head>

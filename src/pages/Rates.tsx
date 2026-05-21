@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
 import { DISBURSEMENTS } from '../data/loanData'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 import { fmtDateLong } from '../lib/dates'
 import { formatPercent } from '../lib/format'
 import { parseISO, format } from 'date-fns'
@@ -25,6 +26,7 @@ const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 const Rates = () => {
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so currency toggle re-renders rate-derived values
 
   const allEvents: Event[] = useMemo(() => {
     const list: Event[] = []

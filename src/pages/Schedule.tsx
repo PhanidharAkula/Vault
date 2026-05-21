@@ -9,11 +9,13 @@ import { fmtDate, fmtDateLong, formatRelative } from '../lib/dates'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
 import { computeAggregate } from '../lib/calculations'
 import { useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 
 type Row = { d: DisbursementView; r: SchedulePayment }
 
 const Schedule = () => {
   const todayIso = useTodayIso()
+  useCurrency() // subscribe so currency toggle re-renders all formatINR calls
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
   const [groupBy, setGroupBy] = useState<'date' | 'tranche'>('date')
   const [filter, setFilter] = useState<'all' | 'past' | 'future'>('all')

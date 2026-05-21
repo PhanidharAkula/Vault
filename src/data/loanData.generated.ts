@@ -38,7 +38,7 @@ export type Disbursement = {
 export const RAW_DISBURSEMENTS: Disbursement[] = [
   {
     "applicationNumber": "A8637744070",
-    "applicantName": "",
+    "applicantName": "Phanidhar Akula",
     "disbursedAmount": 2500000,
     "disbursedDate": "2024-07-16",
     "ratePeriods": [
@@ -1944,7 +1944,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
   },
   {
     "applicationNumber": "A8637744070_2",
-    "applicantName": "",
+    "applicantName": "Phanidhar Akula",
     "disbursedAmount": 1500000,
     "disbursedDate": "2024-12-13",
     "ratePeriods": [
@@ -3783,7 +3783,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
   },
   {
     "applicationNumber": "A8637744070_3",
-    "applicantName": "",
+    "applicantName": "Phanidhar Akula",
     "disbursedAmount": 1500000,
     "disbursedDate": "2025-08-01",
     "ratePeriods": [
@@ -5533,7 +5533,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
   },
   {
     "applicationNumber": "A8637744070_4",
-    "applicantName": "",
+    "applicantName": "Phanidhar Akula",
     "disbursedAmount": 500000,
     "disbursedDate": "2026-05-20",
     "ratePeriods": [
