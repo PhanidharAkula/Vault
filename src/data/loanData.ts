@@ -4,9 +4,12 @@ import type { Disbursement, RatePeriod, SchedulePayment } from './loanData.gener
 export type { Disbursement, RatePeriod, SchedulePayment }
 
 const PLACEHOLDER_NAME = 'Aarav Sharma'
-const COLORS = ['violet', 'cyan', 'emerald'] as const
+// Color is assigned by tranche index. Add more colors here as new tranches
+// are added — must stay in sync with switch sites that paint dot/pill colors
+// (search the codebase for `color === 'violet'` for the touchpoints).
+const COLORS = ['violet', 'cyan', 'emerald', 'pink'] as const
 
-type DisbursementColor = (typeof COLORS)[number]
+export type DisbursementColor = (typeof COLORS)[number]
 
 export type DisbursementView = Disbursement & {
   shortName: string
@@ -65,7 +68,7 @@ const buildView = (d: Disbursement, idx: number): DisbursementView => {
 
 export const DISBURSEMENTS: DisbursementView[] = RAW_DISBURSEMENTS.map(buildView)
 
-// Master account: groups all 3 disbursements
+// Master account: aggregates every tranche under a single roll-up view.
 export const MASTER = {
   applicationNumber: DISBURSEMENTS[0].applicationNumber,
   applicantName: PLACEHOLDER_NAME,

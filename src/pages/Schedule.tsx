@@ -146,7 +146,9 @@ const Schedule = () => {
                       ? 'bg-accent-violet'
                       : row.disbursement.color === 'cyan'
                         ? 'bg-accent-cyan'
-                        : 'bg-accent-emerald'
+                        : row.disbursement.color === 'emerald'
+                          ? 'bg-accent-emerald'
+                          : 'bg-accent-pink'
                   }
                 />
               ))}
@@ -256,6 +258,8 @@ const Schedule = () => {
                                     'border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan',
                                   x.d.color === 'emerald' &&
                                     'border-accent-emerald/30 bg-accent-emerald/10 text-accent-emerald',
+                                  x.d.color === 'pink' &&
+                                    'border-accent-pink/30 bg-accent-pink/10 text-accent-pink',
                                 )}
                               >
                                 {x.d.shortName}
@@ -384,7 +388,9 @@ const TrancheChips = ({ activeRows }: { activeRows: Row[] }) => {
                     ? 'bg-accent-violet ring-accent-violet/40'
                     : d.color === 'cyan'
                       ? 'bg-accent-cyan ring-accent-cyan/40'
-                      : 'bg-accent-emerald ring-accent-emerald/40'
+                      : d.color === 'emerald'
+                        ? 'bg-accent-emerald ring-accent-emerald/40'
+                        : 'bg-accent-pink ring-accent-pink/40'
                   : 'bg-white/[0.06] ring-white/[0.08]',
               )}
             />

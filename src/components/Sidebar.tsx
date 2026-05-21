@@ -10,7 +10,7 @@ import {
   Sun,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { MASTER } from '../data/loanData'
+import { DISBURSEMENTS, MASTER } from '../data/loanData'
 import { fmtDateLong } from '../lib/dates'
 import { clockString, zoneShortName } from '../lib/timezone'
 import { useNow, useTodayIso } from '../state/today'
@@ -20,7 +20,7 @@ export type RouteKey = 'overview' | 'disbursements' | 'schedule' | 'rates' | 'li
 
 const ITEMS: { key: RouteKey; label: string; icon: React.ComponentType<{ className?: string; size?: number }>; hint: string }[] = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard, hint: 'Snapshot' },
-  { key: 'disbursements', label: 'Disbursements', icon: Wallet, hint: '3 tranches' },
+  { key: 'disbursements', label: 'Disbursements', icon: Wallet, hint: `${DISBURSEMENTS.length} tranches` },
   { key: 'schedule', label: 'Schedule', icon: CalendarDays, hint: 'Amortization' },
   { key: 'rates', label: 'Rate History', icon: Percent, hint: 'Interest moves' },
   { key: 'live', label: 'Live View', icon: Activity, hint: 'Real-time' },

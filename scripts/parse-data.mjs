@@ -3,7 +3,7 @@ import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SRC = resolve(__dirname, '../../loan_details.txt')
+const SRC = resolve(__dirname, '../loan_details.txt')
 const OUT = resolve(__dirname, '../src/data/loanData.generated.ts')
 
 const text = readFileSync(SRC, 'utf8')
@@ -77,8 +77,8 @@ for (const raw of lines) {
     rp.gracePeriod = parseFloatField(cols[3])
     rp.emiPeriod = parseFloatField(cols[5])
   } else if (c0 === 'Active Start Date') {
-    rp.activeStartDate = parseDate(cols[1])
-    rp.activeEndDate = parseDate(cols[3])
+    rp.activeStartDate = parseDate(cols[1]) ?? ''
+    rp.activeEndDate = parseDate(cols[3]) ?? ''
   } else if (c0 === 'Part Monthly Interest') {
     rp.partMonthlyInterest = parseNumber(cols[1])
     cur.ratePeriods.push(rp)

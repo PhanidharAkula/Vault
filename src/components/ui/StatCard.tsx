@@ -7,7 +7,7 @@ type Props = {
   label: string
   value: number | string
   format?: (n: number) => string
-  tone?: 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'
+  tone?: 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'pink'
   hint?: ReactNode
   icon?: ReactNode
   delta?: { value: number; label?: string }
@@ -28,6 +28,8 @@ const TONE_WASH: Record<NonNullable<Props['tone']>, string> = {
     'bg-[radial-gradient(120%_60%_at_100%_0%,rgba(251,191,36,0.18),rgba(251,191,36,0)_60%)]',
   rose:
     'bg-[radial-gradient(120%_60%_at_100%_0%,rgba(251,113,133,0.18),rgba(251,113,133,0)_60%)]',
+  pink:
+    'bg-[radial-gradient(120%_60%_at_100%_0%,rgba(244,114,182,0.18),rgba(244,114,182,0)_60%)]',
 }
 
 const TONE_ICON: Record<NonNullable<Props['tone']>, string> = {
@@ -37,6 +39,7 @@ const TONE_ICON: Record<NonNullable<Props['tone']>, string> = {
   emerald: 'text-accent-emerald',
   amber: 'text-accent-amber',
   rose: 'text-accent-rose',
+  pink: 'text-accent-pink',
 }
 
 export const StatCard = ({

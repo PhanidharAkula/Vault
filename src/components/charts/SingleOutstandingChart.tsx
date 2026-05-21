@@ -19,6 +19,7 @@ const TONE: Record<string, { stroke: string; gradId: string; gradFrom: string; g
   violet: { stroke: '#a78bfa', gradId: 'soV', gradFrom: '#a78bfa', gradTo: '#a78bfa' },
   cyan: { stroke: '#22d3ee', gradId: 'soC', gradFrom: '#22d3ee', gradTo: '#22d3ee' },
   emerald: { stroke: '#34d399', gradId: 'soE', gradFrom: '#34d399', gradTo: '#34d399' },
+  pink: { stroke: '#f472b6', gradId: 'soP', gradFrom: '#f472b6', gradTo: '#f472b6' },
 }
 
 export const SingleOutstandingChart = ({

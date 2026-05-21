@@ -27,6 +27,7 @@ const ACCENT: Record<string, { text: string; bg: string; gradTo: string }> = {
   violet: { text: 'text-accent-violet', bg: 'bg-accent-violet', gradTo: 'to-accent-violet' },
   cyan: { text: 'text-accent-cyan', bg: 'bg-accent-cyan', gradTo: 'to-accent-cyan' },
   emerald: { text: 'text-accent-emerald', bg: 'bg-accent-emerald', gradTo: 'to-accent-emerald' },
+  pink: { text: 'text-accent-pink', bg: 'bg-accent-pink', gradTo: 'to-accent-pink' },
 }
 
 const Disbursements = ({

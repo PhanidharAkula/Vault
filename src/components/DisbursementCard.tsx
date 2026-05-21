@@ -11,12 +11,14 @@ const COLOR_DOT = {
   violet: 'bg-accent-violet',
   cyan: 'bg-accent-cyan',
   emerald: 'bg-accent-emerald',
+  pink: 'bg-accent-pink',
 } as const
 
 const COLOR_GLOW = {
   violet: 'shadow-glow-violet',
   cyan: 'shadow-glow-cyan',
   emerald: 'shadow-glow-emerald',
+  pink: 'shadow-glow-violet', // pink reuses the violet glow shadow (no dedicated pink glow utility)
 } as const
 
 // Soft tone wash that fades into transparency at the corner — no hard edges.
@@ -27,6 +29,8 @@ const TONE_WASH = {
     'bg-[radial-gradient(120%_70%_at_100%_0%,rgba(34,211,238,0.20),rgba(34,211,238,0)_60%)]',
   emerald:
     'bg-[radial-gradient(120%_70%_at_100%_0%,rgba(52,211,153,0.20),rgba(52,211,153,0)_60%)]',
+  pink:
+    'bg-[radial-gradient(120%_70%_at_100%_0%,rgba(244,114,182,0.22),rgba(244,114,182,0)_60%)]',
 } as const
 
 export const DisbursementCard = ({

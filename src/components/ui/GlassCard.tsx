@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import type { HTMLAttributes, ReactNode } from 'react'
 
-type Tone = 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'
+type Tone = 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'pink'
 
 const TONE_GLOW: Record<Tone, string> = {
   default: '',
@@ -15,6 +15,8 @@ const TONE_GLOW: Record<Tone, string> = {
     'before:absolute before:inset-0 before:-z-10 before:bg-[radial-gradient(60%_120%_at_0%_0%,rgba(251,191,36,0.18),transparent_70%)]',
   rose:
     'before:absolute before:inset-0 before:-z-10 before:bg-[radial-gradient(60%_120%_at_0%_0%,rgba(251,113,133,0.18),transparent_70%)]',
+  pink:
+    'before:absolute before:inset-0 before:-z-10 before:bg-[radial-gradient(60%_120%_at_0%_0%,rgba(244,114,182,0.18),transparent_70%)]',
 }
 
 type GlassCardProps = HTMLAttributes<HTMLDivElement> & {
@@ -81,7 +83,7 @@ export const Pill = ({
   className,
 }: {
   children: ReactNode
-  tone?: 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'
+  tone?: 'default' | 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'pink'
   className?: string
 }) => {
   const map = {
@@ -91,6 +93,7 @@ export const Pill = ({
     emerald: 'bg-accent-emerald/10 text-accent-emerald border-accent-emerald/30',
     amber: 'bg-accent-amber/10 text-accent-amber border-accent-amber/30',
     rose: 'bg-accent-rose/10 text-accent-rose border-accent-rose/30',
+    pink: 'bg-accent-pink/10 text-accent-pink border-accent-pink/30',
   }
   return (
     <span

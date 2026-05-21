@@ -74,7 +74,7 @@ const Live = () => {
           title="Real-time accrual"
           description="Each tranche carries its own daily-interest engine."
         />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {DISBURSEMENTS.map((d, i) => {
             const live = computeLiveStatus(d, todayIso)
             return (
@@ -161,7 +161,7 @@ const LiveTrancheCard = ({
   index: number
 }) => {
   const ratePerSec = live.dailyInterest / 86400
-  const COLORS = { violet: '#a78bfa', cyan: '#22d3ee', emerald: '#34d399' } as const
+  const COLORS = { violet: '#a78bfa', cyan: '#22d3ee', emerald: '#34d399', pink: '#f472b6' } as const
   const accent = COLORS[disbursement.color as keyof typeof COLORS]
 
   return (
@@ -238,7 +238,7 @@ const CombinedCountdown = ({ agg }: { agg: AggregateStatus }) => {
 
         <div className="mt-2 space-y-1.5 border-t border-white/[0.05] pt-3">
           {agg.nextDueRows.map((row) => {
-            const COLORS = { violet: 'bg-accent-violet', cyan: 'bg-accent-cyan', emerald: 'bg-accent-emerald' } as const
+            const COLORS = { violet: 'bg-accent-violet', cyan: 'bg-accent-cyan', emerald: 'bg-accent-emerald', pink: 'bg-accent-pink' } as const
             return (
               <div
                 key={row.disbursement.applicationNumber}

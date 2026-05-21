@@ -35,6 +35,14 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
   const nextPrincipalSum = agg.nextDueRows.reduce((s, x) => s + x.payment.principal, 0)
   const nextOutstandingAfter = agg.nextDueRows.reduce((s, x) => s + x.payment.totalOutstanding, 0)
 
+  // Combined monthly EMI across all tranches (each tranche contributes its
+  // first EMI row's paymentDue). Computed from the schedule so it stays in
+  // sync as new tranches are added.
+  const combinedEmi = DISBURSEMENTS.reduce(
+    (s, d) => s + (d.emiStartIndex >= 0 ? d.schedule[d.emiStartIndex].paymentDue : 0),
+    0,
+  )
+
   return (
     <div className="space-y-6">
       {/* Heading row */}
@@ -77,7 +85,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           format={formatINRCompact}
           tone="violet"
           icon={<Banknote size={16} />}
-          hint="across 3 tranches"
+          hint={`across ${DISBURSEMENTS.length} tranches`}
           index={0}
         />
         <StatCard
@@ -137,7 +145,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           <SectionTitle
             eyebrow="Master view"
             title="Outstanding across time"
-            description="Stacked across all three disbursements. Pink dot is today; coloured ticks are interest-rate changes."
+            description={`Stacked across all ${DISBURSEMENTS.length} disbursements. Pink dot is today; coloured ticks are interest-rate changes.`}
           />
           <OutstandingTimeline todayIso={todayIso} />
         </GlassCard>
@@ -196,7 +204,9 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
                               ? 'bg-accent-violet'
                               : row.disbursement.color === 'cyan'
                                 ? 'bg-accent-cyan'
-                                : 'bg-accent-emerald'
+                                : row.disbursement.color === 'emerald'
+                                  ? 'bg-accent-emerald'
+                                  : 'bg-accent-pink'
                           }`}
                         />
                         <span className="font-mono text-ink-secondary">
@@ -285,7 +295,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           eyebrow="EMI horizon"
           title="11 Sep 2027"
           subtitle="full EMI begins"
-          body={`From Sep 2027, the combined monthly EMI across all three tranches will be ${formatINRCompact(96519)}. That's when principal repayment kicks in.`}
+          body={`From Sep 2027, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)}. That's when principal repayment kicks in.`}
         />
         <Insight
           eyebrow="Burn rate"

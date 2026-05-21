@@ -21,7 +21,7 @@ import clsx from 'clsx'
 
 type Event = { date: string; disb: number; from: number; to: number; rate: number }
 
-const COLORS = ['#a78bfa', '#22d3ee', '#34d399']
+const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 const Rates = () => {
   const todayIso = useTodayIso()
@@ -84,7 +84,7 @@ const Rates = () => {
           Interest rate timeline
         </h1>
         <p className="mt-1 text-sm text-ink-secondary">
-          Every revision the lender has made across all three disbursements.
+          Every revision the lender has made across all {DISBURSEMENTS.length} disbursements.
         </p>
       </div>
 

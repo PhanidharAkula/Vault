@@ -11,7 +11,7 @@ import { computeAggregate } from '../lib/calculations'
 import { formatINR, formatINRCompact } from '../lib/format'
 import { fmtDateLong, monthsBetween, tenureToYM } from '../lib/dates'
 
-const COLORS = ['#a78bfa', '#22d3ee', '#34d399']
+const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 const Analytics = () => {
   useChartTick()
@@ -101,7 +101,7 @@ const Analytics = () => {
           title={formatINRCompact(agg.totalPlannedInterest)}
           subtitle={`${interestPctOfPrincipal.toFixed(0)}% of principal`}
           color="rose"
-          body={`Across all three tranches, you'll pay ${formatINR(agg.totalPlannedInterest)} in interest by ${fmtDateLong(MASTER.finalMaturity)}.`}
+          body={`Across all ${DISBURSEMENTS.length} tranches, you'll pay ${formatINR(agg.totalPlannedInterest)} in interest by ${fmtDateLong(MASTER.finalMaturity)}.`}
         />
         <Headline
           eyebrow="Tenure horizon"

@@ -7,6 +7,7 @@ const COLORS: Record<string, string> = {
   violet: '#a78bfa',
   cyan: '#22d3ee',
   emerald: '#34d399',
+  pink: '#f472b6',
 }
 
 /**

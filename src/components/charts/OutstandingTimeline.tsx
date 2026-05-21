@@ -19,7 +19,7 @@ import { formatINRCompact, formatINR } from '../../lib/format'
 
 type Mode = 'total' | 'stacked'
 
-const COLOR = ['#a78bfa', '#22d3ee', '#34d399']
+const COLOR = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
   const [mode, setMode] = useState<Mode>('stacked')
@@ -59,18 +59,16 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="g0" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor={COLOR[0]} stopOpacity={0.6} />
-                <stop offset="1" stopColor={COLOR[0]} stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor={COLOR[1]} stopOpacity={0.6} />
-                <stop offset="1" stopColor={COLOR[1]} stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor={COLOR[2]} stopOpacity={0.6} />
-                <stop offset="1" stopColor={COLOR[2]} stopOpacity={0} />
-              </linearGradient>
+              {/* One vertical fill gradient per tranche, generated from the
+                  DISBURSEMENTS list so new tranches automatically pick up a
+                  matching fill (previously the 4th tranche had only a stroke
+                  because `g3` wasn't declared here). */}
+              {DISBURSEMENTS.map((d, i) => (
+                <linearGradient key={d.applicationNumber} id={`g${i}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor={COLOR[i]} stopOpacity={0.6} />
+                  <stop offset="1" stopColor={COLOR[i]} stopOpacity={0} />
+                </linearGradient>
+              ))}
               <linearGradient id="gtotal" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stopColor="#818cf8" stopOpacity={0.55} />
                 <stop offset="1" stopColor="#818cf8" stopOpacity={0} />
