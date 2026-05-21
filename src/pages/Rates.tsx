@@ -94,7 +94,7 @@ const Rates = () => {
           title="Active rate, month by month"
           description="Each line follows one tranche through every revision. Pink line is today."
         />
-        <div className="h-[280px]">
+        <div className="h-[210px] sm:h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />

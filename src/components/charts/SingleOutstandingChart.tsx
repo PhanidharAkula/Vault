@@ -59,7 +59,9 @@ export const SingleOutstandingChart = ({
   const peakPoint = data[peakIndex]
 
   return (
-    <div style={{ height }}>
+    // Mobile gets a shorter chart (210px) so it doesn't look vertically stretched
+    // at narrow widths. From sm: upwards we honour the `height` prop.
+    <div className="h-[210px] sm:h-[var(--chart-h,280px)]" style={{ ['--chart-h' as string]: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <defs>

@@ -63,7 +63,10 @@ export const SectionTitle = ({
   description?: string
   right?: ReactNode
 }) => (
-  <div className="mb-4 flex items-end justify-between gap-4">
+  // Stack the right slot below the title block on mobile (left-aligned, so it
+  // doesn't get truncated against the right edge by a multi-line description).
+  // At sm+ it pins right and bottom-aligns with the description as before.
+  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
     <div>
       {eyebrow && (
         <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">

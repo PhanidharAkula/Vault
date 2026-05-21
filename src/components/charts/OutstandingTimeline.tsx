@@ -55,7 +55,7 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
         </div>
       </div>
 
-      <div className="h-[320px]">
+      <div className="h-[220px] sm:h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>

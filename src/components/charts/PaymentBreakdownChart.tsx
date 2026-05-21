@@ -33,7 +33,7 @@ export const PaymentBreakdownChart = ({
   )
 
   return (
-    <div className="h-[260px]">
+    <div className="h-[200px] sm:h-[260px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barGap={0} barCategoryGap={0}>
           <defs>

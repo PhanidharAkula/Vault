@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu } from 'lucide-react'
+import { Menu, Moon, Sun } from 'lucide-react'
 import Sidebar, { type RouteKey } from './components/Sidebar'
 import OverviewPage from './pages/Overview'
 import DisbursementsPage from './pages/Disbursements'
@@ -9,7 +9,7 @@ import RatesPage from './pages/Rates'
 import LivePage from './pages/Live'
 import AnalyticsPage from './pages/Analytics'
 import { TodayProvider } from './state/today'
-import { ThemeProvider } from './state/theme'
+import { ThemeProvider, useTheme } from './state/theme'
 
 const VALID_ROUTES: RouteKey[] = ['overview', 'disbursements', 'schedule', 'rates', 'live', 'analytics']
 
@@ -135,6 +135,11 @@ const PageRouter = () => {
         </button>
       )}
 
+      {/* Quick theme toggle — mobile only. Mirrors the hamburger on the right
+          so the top bar feels balanced and theme can flip without opening the
+          drawer. Desktop already has the full Light/Dark pill in the sidebar. */}
+      {!drawerOpen && <MobileThemeButton />}
+
       {/* Backdrop — only on mobile when drawer is open. */}
       <AnimatePresence>
         {drawerOpen && (
@@ -156,7 +161,7 @@ const PageRouter = () => {
           where the sidebar is permanently in flow. `pt-16` on mobile to clear
           the floating hamburger; `pt-8` on md+ where there's no hamburger. */}
       <main className="ml-0 min-w-0 max-w-full flex-1 overflow-x-clip md:ml-[260px]">
-        <div className="overflow-x-clip px-4 pb-16 pt-16 md:px-8 md:pt-8">
+        <div className="overflow-x-clip px-4 pb-16 pt-20 md:px-8 md:pt-8">
           <AnimatePresence mode="wait" initial={false} onExitComplete={handleExitComplete}>
             <motion.div
               key={route}
@@ -171,6 +176,25 @@ const PageRouter = () => {
         </div>
       </main>
     </div>
+  )
+}
+
+const MobileThemeButton = () => {
+  const { theme, toggle } = useTheme()
+  const isDark = theme === 'dark'
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      className="fixed right-4 top-4 z-50 grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 shadow-lg backdrop-blur-md transition-colors md:hidden"
+    >
+      {isDark ? (
+        <Moon size={18} className="text-brand-300" />
+      ) : (
+        <Sun size={18} className="text-accent-amber" />
+      )}
+    </button>
   )
 }
 

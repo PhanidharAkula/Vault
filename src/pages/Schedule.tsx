@@ -63,11 +63,8 @@ const Schedule = () => {
           </p>
         </div>
 
-        {/* Toggle pills stack vertically on mobile (the two pills together
-            measure ~485px which overflows a 375px viewport even with
-            `flex-wrap`), and lay out side-by-side from sm: upwards. */}
-        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <div className="flex items-center justify-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
             {(['date', 'tranche'] as const).map((g) => (
               <button
                 key={g}
@@ -88,7 +85,7 @@ const Schedule = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center justify-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
             {(['all', 'past', 'future'] as const).map((f) => (
               <button
                 key={f}

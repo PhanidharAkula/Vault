@@ -84,7 +84,9 @@ export const PaymentScheduleTable = ({
             </button>
           ))}
         </div>
-        <div className="ml-auto flex items-center gap-2 rounded-full border border-white/[0.06] bg-bg-elevated/60 px-3 py-1.5 text-xs">
+        {/* On mobile the search sits inline with the filter pills (left-aligned).
+            From sm+ `ml-auto` pushes it to the row's right end as before. */}
+        <div className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-bg-elevated/60 px-3 py-1.5 text-xs sm:ml-auto">
           <Search size={12} className="text-ink-tertiary" />
           <input
             value={query}

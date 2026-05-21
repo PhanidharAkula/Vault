@@ -125,7 +125,7 @@ const Sidebar = ({
           Extra bottom padding on mobile/tablet so the LiveSystem card clears
           iOS Safari's collapsing bottom toolbar (which eats viewport height
           even on iPad). Full desktop (`lg+`) keeps the original 24px. */}
-      <div className="space-y-3 px-4 pb-24 pt-4 lg:pb-6">
+      <div className="space-y-3 px-4 pb-14 pt-4 lg:pb-6">
         <ThemeToggle />
         <LiveSystemCard />
       </div>
