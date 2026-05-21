@@ -43,6 +43,11 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
     0,
   )
 
+  // Earliest date any tranche transitions into EMI (where principal repayment
+  // begins). Pulled from the schedule rather than hardcoded.
+  const emiStarts = DISBURSEMENTS.map((d) => d.emiStartDate).filter(Boolean) as string[]
+  const fullEmiStartDate = emiStarts.sort()[0] ?? MASTER.finalMaturity
+
   return (
     <div className="space-y-6">
       {/* Heading row */}
@@ -293,9 +298,9 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
         />
         <Insight
           eyebrow="EMI horizon"
-          title="11 Sep 2027"
+          title={fmtDateLong(fullEmiStartDate)}
           subtitle="full EMI begins"
-          body={`From Sep 2027, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)}. That's when principal repayment kicks in.`}
+          body={`From ${fmtDateLong(fullEmiStartDate)}, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)}. That's when principal repayment kicks in.`}
         />
         <Insight
           eyebrow="Burn rate"
