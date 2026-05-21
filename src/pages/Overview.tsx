@@ -276,7 +276,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
             </div>
           }
         />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {DISBURSEMENTS.map((d, i) => (
             <DisbursementCard key={d.applicationNumber} d={d} index={i} onOpen={() => onOpenDisbursement(i)} />
           ))}

@@ -63,8 +63,11 @@ const Schedule = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+        {/* Toggle pills stack vertically on mobile (the two pills together
+            measure ~485px which overflows a 375px viewport even with
+            `flex-wrap`), and lay out side-by-side from sm: upwards. */}
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex items-center justify-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
             {(['date', 'tranche'] as const).map((g) => (
               <button
                 key={g}
@@ -85,7 +88,7 @@ const Schedule = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+          <div className="flex items-center justify-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
             {(['all', 'past', 'future'] as const).map((f) => (
               <button
                 key={f}
@@ -199,16 +202,20 @@ const Schedule = () => {
                         {fmtDate(`${month}-01`, 'MMM yyyy')}
                       </div>
                     </div>
+                    {/* Mobile keeps only the Due summary inline (Interest/
+                        Principal hide below sm so the row doesn't wrap into 4
+                        lines). The full breakdown is one tap away once the
+                        month expands. */}
                     <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-1 text-sm">
                       <div>
                         <span className="text-ink-tertiary">Due: </span>
                         <span className="font-semibold tabular">{formatINR(sumDue)}</span>
                       </div>
-                      <div>
+                      <div className="hidden sm:block">
                         <span className="text-ink-tertiary">Interest: </span>
                         <span className="text-accent-rose tabular">{formatINR(sumInt)}</span>
                       </div>
-                      <div>
+                      <div className="hidden sm:block">
                         <span className="text-ink-tertiary">Principal: </span>
                         <span className="text-accent-emerald tabular">
                           {formatINR(sumPrin)}
