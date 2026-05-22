@@ -68,7 +68,7 @@ export const clockString = (tz?: string, d: Date = new Date()): string => {
   return `${pad(c.hour)}:${pad(c.minute)}:${pad(c.second)}`
 }
 
-// Short timezone label e.g. "IST", "EDT", "PST" — defaults to the browser's
+// Short timezone label e.g. "IST", "EDT", "PST" - defaults to the browser's
 // local zone abbreviation.
 export const zoneShortName = (tz?: string, d: Date = new Date()): string => {
   const part = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })

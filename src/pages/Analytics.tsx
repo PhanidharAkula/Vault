@@ -24,10 +24,10 @@ const Analytics = () => {
   // every time `TodayProvider` ticks (which happens every second). Without
   // these memos, the data arrays get fresh references on every re-render,
   // and Recharts treats that as "data changed" and replays the animation
-  // from scratch — producing the chunky stop-start effect.
+  // from scratch - producing the chunky stop-start effect.
   //
   // For "principal" we use `totalDisbursed` (the ₹55L loan) rather than the
-  // sum of the `principal` column — the column total double-counts the
+  // sum of the `principal` column - the column total double-counts the
   // pre-EMI accrued interest that ends up being repaid via EMI principal.
   // Disbursed (₹55L) + interest charged (₹73.56L) = lifetime payment ✓.
   const principalVsInterest = useMemo(
@@ -249,12 +249,12 @@ const Analytics = () => {
                     key={s.name}
                     className="rounded-lg border border-white/[0.05] bg-bg-elevated/40 px-3 py-2"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
-                        <span className="font-mono text-ink-secondary text-xs">{s.label}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
+                        <span className="truncate font-mono text-ink-secondary text-xs">{s.label}</span>
                       </div>
-                      <span className="font-semibold tabular">{formatINR(s.value)}</span>
+                      <span className="shrink-0 font-semibold tabular">{formatINR(s.value)}</span>
                     </div>
                     <div className="mt-1">
                       <DrawBar
@@ -396,13 +396,13 @@ const Headline = ({
 
 const Dial = ({ label, pct, suffix, color }: { label: string; pct: number; suffix: string; color: string }) => {
   const { theme } = useTheme()
-  // Theme-aware track colour — `rgba(255,255,255,0.05)` is invisible on white,
+  // Theme-aware track colour - `rgba(255,255,255,0.05)` is invisible on white,
   // so we flip to a translucent dark in light mode.
   const trackStroke =
     theme === 'light' ? 'rgba(14,17,26,0.10)' : 'rgba(255,255,255,0.06)'
 
   // Hand-rolled SVG gauge.  Recharts' RadialBar only rounds the leading edge
-  // of its bar — for tiny values (e.g. 1.6%) the *starting* edge stays sharp
+  // of its bar - for tiny values (e.g. 1.6%) the *starting* edge stays sharp
   // because there isn't enough arc length for both corner radii to fit.
   // SVG `stroke-linecap="round"` rounds both ends of any stroked path
   // regardless of length, so a custom arc avoids the issue entirely.
@@ -452,7 +452,7 @@ const Dial = ({ label, pct, suffix, color }: { label: string; pct: number; suffi
             fill="none"
             strokeLinecap="round"
           />
-          {/* Progress (color) — both ends rounded via stroke-linecap.
+          {/* Progress (color) - both ends rounded via stroke-linecap.
               Stroke-dashoffset animates from full-length (hidden) to the
               target offset, drawing the arc clockwise from the start. */}
           <path
@@ -488,7 +488,7 @@ const Dial = ({ label, pct, suffix, color }: { label: string; pct: number; suffi
 
 // Build an SVG arc path from `startDeg` to `endDeg` (math polar coords:
 // 0° east, 90° north, angles increase counter-clockwise). The arc curves
-// upward through the top of the circle — `sweepFlag=1` selects the side of
+// upward through the top of the circle - `sweepFlag=1` selects the side of
 // the chord that contains the centre (i.e. the upper arc when both points
 // are in the lower half of the circle).
 const arcPath = (cx: number, cy: number, r: number, startDeg: number, endDeg: number): string => {

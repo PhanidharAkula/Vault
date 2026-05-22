@@ -111,7 +111,7 @@ const Schedule = () => {
         </div>
       </div>
 
-      {/* Next due banner — combined across all tranches */}
+      {/* Next due banner - combined across all tranches */}
       {agg.nextDueDate && (
         <GlassCard pad="lg" tone="emerald">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -164,7 +164,7 @@ const Schedule = () => {
           <SectionTitle
             eyebrow="Monthly groups"
             title="Combined cashflow by month"
-            description="Click a month to expand all payments due in that window across tranches."
+            description="Expand a month to see every payment due in that window across tranches."
             right={
               <div className="flex items-center gap-1.5 text-[11px] text-ink-tertiary">
                 <Filter size={12} /> {filtered.length} payments

@@ -2,14 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, CalendarClock, TrendingUp, Zap } from 'lucide-react'
 import { useTodayIso } from '../state/today'
 import { computeAggregate } from '../lib/calculations'
+import { DISBURSEMENTS, MASTER } from '../data/loanData'
 import { formatINR, formatINRCompact } from '../lib/format'
-import { fmtDateLong } from '../lib/dates'
+import { fmtDateLong, monthsBetween, tenureToYM } from '../lib/dates'
+import { useCountUp } from '../lib/useCountUp'
 
 export const LiveOutstandingHero = () => {
   const todayIso = useTodayIso()
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
-  // Today's outstanding — recomputed once per day (no per-second tick)
+  // Today's outstanding - recomputed once per day (no per-second tick)
   const outstanding = Math.round(agg.totalCurrentOutstanding)
 
   // Count up from 0 → outstanding on mount (and from previous → new on day rollover).
@@ -21,9 +23,20 @@ export const LiveOutstandingHero = () => {
   const utilizationPct = (agg.totalCurrentOutstanding / agg.totalDisbursed) * 100
   const growthPct = utilizationPct - 100 // positive when outstanding > disbursed
 
+  // Tenure progress - measured from the earliest disbursement date to the
+  // master final maturity. Gives a single "how far through the loan are we"
+  // number that pairs nicely with Net growth (money) as a second axis (time).
+  const startIso = DISBURSEMENTS.reduce(
+    (a, d) => (d.disbursedDate < a ? d.disbursedDate : a),
+    DISBURSEMENTS[0].disbursedDate,
+  )
+  const monthsElapsed = Math.max(0, monthsBetween(startIso, todayIso))
+  const monthsTotal = Math.max(1, monthsBetween(startIso, MASTER.finalMaturity))
+  const tenurePct = Math.min(100, (monthsElapsed / monthsTotal) * 100)
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-bg-elevated/80 via-bg-surface/60 to-bg-base/30 p-5 shadow-glow md:p-7">
-      {/* Soft radial washes — fade to transparent before reaching the card edges,
+      {/* Soft radial washes - fade to transparent before reaching the card edges,
           so there are no clipped-circle hard arcs at the corners. */}
       <div
         aria-hidden
@@ -66,14 +79,20 @@ export const LiveOutstandingHero = () => {
             </div>
           </div>
 
-          {/* Single contextual tile: net growth (unique to the hero — not in
-              the KPI strip below). Disbursed and Eff. rate were removed
-              because they're shown verbatim in the KPI strip. */}
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:max-w-xs">
+          {/* Contextual tiles - both unique to the hero (not in the KPI strip
+              below). The entire row is hidden on mobile so the hero's big
+              number and rate stats lead; both tiles surface from sm+ where
+              there's horizontal room for them. */}
+          <div className="mt-6 hidden flex-wrap gap-3 sm:flex">
             <Tile
               label="Net growth since disbursement"
               value={formatINRCompact(agg.totalCurrentOutstanding - agg.totalDisbursed)}
               caption={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}% above the ${formatINRCompact(agg.totalDisbursed)} principal`}
+            />
+            <Tile
+              label="Tenure complete"
+              value={`${tenurePct.toFixed(1)}%`}
+              caption={`${tenureToYM(monthsElapsed)} in · ${tenureToYM(monthsTotal - monthsElapsed)} to go`}
             />
           </div>
         </div>
@@ -89,7 +108,7 @@ export const LiveOutstandingHero = () => {
 
 const Tile = ({ label, value, caption }: { label: string; value: string; caption: string }) => (
   <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-bg-elevated/40 px-3 py-3">
-    <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-tertiary">
+    <div className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-ink-tertiary">
       {label}
     </div>
     <div className="mt-1 font-display text-lg font-semibold tabular">{value}</div>
@@ -138,8 +157,8 @@ const ProgressRing = ({
 
   return (
     // Outer wrapper scales the SVG via CSS at <md so the ring fits on mobile
-    // without changing any of the math (cx, cy, r) — viewBox handles scaling.
-    <div className="relative h-[200px] w-[200px] md:h-[256px] md:w-[256px]">
+    // without changing any of the math (cx, cy, r) - viewBox handles scaling.
+    <div className="relative h-[240px] w-[240px] md:h-[256px] md:w-[256px]">
       <svg width="100%" height="100%" viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <defs>
           <linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1">
@@ -149,7 +168,7 @@ const ProgressRing = ({
           </linearGradient>
         </defs>
 
-        {/* track — CSS variable so it flips with the theme */}
+        {/* track - CSS variable so it flips with the theme */}
         <circle
           cx={cx}
           cy={cy}
@@ -159,7 +178,7 @@ const ProgressRing = ({
           fill="none"
         />
 
-        {/* progress arc — draws once on mount (page refresh) via CSS transition */}
+        {/* progress arc - draws once on mount (page refresh) via CSS transition */}
         <g transform={`rotate(-90 ${cx} ${cy})`}>
           <circle
             cx={cx}
@@ -178,7 +197,7 @@ const ProgressRing = ({
 
       <div className="absolute inset-0 grid place-items-center">
         <div className="text-center">
-          {/* eyebrow — fades in first */}
+          {/* eyebrow - fades in first */}
           <div
             className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary"
             style={{
@@ -190,7 +209,7 @@ const ProgressRing = ({
             growth
           </div>
 
-          {/* count-up percentage — number ticks 0 → growthPct as the arc draws */}
+          {/* count-up percentage - number ticks 0 → growthPct as the arc draws */}
           <div
             className="mt-0.5 font-display text-[32px] font-semibold leading-none tabular gradient-text-cyan md:text-[42px]"
             style={{
@@ -233,24 +252,3 @@ const ProgressRing = ({
   )
 }
 
-// Count up from 0 (or whatever target was previously) toward `target`
-// over `duration` ms using a cubic ease-out. When `target` is 0 the value
-// stays at 0 — used here to gate the count-up on the `drawn` mount flag.
-const useCountUp = (target: number, duration = 1400): number => {
-  const [value, setValue] = useState(0)
-  useEffect(() => {
-    let raf = 0
-    const start = performance.now()
-    const from = value
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setValue(from + (target - from) * eased)
-      if (t < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target, duration])
-  return value
-}

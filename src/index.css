@@ -7,7 +7,7 @@
 @layer base {
   /* ────────────────────────────────────────────────────────────────────────
      Theme tokens.  Stored as space-separated RGB triplets so they can be
-     consumed by Tailwind's `rgb(var(--x) / <alpha-value>)` syntax — that's
+     consumed by Tailwind's `rgb(var(--x) / <alpha-value>)` syntax - that's
      what makes `bg-bg-base/50` etc. still work.
      ──────────────────────────────────────────────────────────────────────── */
 
@@ -120,15 +120,54 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 200ms ease;
-    /* App is read-only — no text selection / copy / iOS touch callout. */
+    /* App is read-only - no text selection / copy / iOS touch callout. */
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    /* Suppress the iOS/Android tap-highlight rectangle that Safari paints on
+       any interactive element (including Recharts pie/bar paths that get
+       `cursor: pointer`). Without this, tapping a pie slice on mobile flashes
+       a grey square over just that slice. */
+    -webkit-tap-highlight-color: transparent;
     cursor: default;
     /* Prevent any rogue wide child from horizontally scrolling the whole page.
        Local overflow-x:auto wrappers (e.g. amortization tables) still scroll
        within their own containers. */
     overflow-x: clip;
+  }
+  /* Belt-and-braces: also apply to all descendants so SVG paths (Recharts
+     slices/bars) and any deeply-nested element with its own stacking context
+     doesn't inherit the default `currentColor` highlight from the UA. */
+  *,
+  *::before,
+  *::after {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Safari iOS draws a focus/selection rectangle around tapped SVG paths
+     (Recharts pie slices, bar cells, line dots) because each <path>/<rect>
+     receives focus and a tap-highlight. The rules above kill the highlight
+     globally; these rules additionally suppress the focus outline and any
+     touch callout that Safari uses to single out one SVG primitive. */
+  svg,
+  svg * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    outline: none;
+  }
+  svg *:focus,
+  svg *:focus-visible {
+    outline: none;
+  }
+  /* Disable the iOS Safari "magnify on tap" / text-selection gesture on
+     Recharts wrappers. Without `touch-action: manipulation`, Safari treats
+     SVG paths as text-selectable and shows a selection rectangle around the
+     tapped slice/bar. */
+  .recharts-wrapper,
+  .recharts-wrapper * {
+    touch-action: manipulation;
+    -webkit-user-drag: none;
   }
   /* Pointer cursor on anything actionable. */
   button:not(:disabled),
@@ -247,7 +286,7 @@
 
 /* ────────────────────────────────────────────────────────────────────────
    Theme-aware overrides for the existing dark-only Tailwind utilities.
-   Many components use `bg-white/[0.04]`, `border-white/[0.06]` etc. — those
+   Many components use `bg-white/[0.04]`, `border-white/[0.06]` etc. - those
    look right on a dark surface but become invisible on a light one.  We
    leave the JSX untouched and just remap those classes via CSS variable
    so they invert to a translucent dark colour in light mode.
@@ -269,7 +308,7 @@
   [data-theme='light'] .border-white\/\[0\.12\] { border-color: rgba(var(--overlay-rgb), 0.18); }
   [data-theme='light'] .border-white\/10 { border-color: rgba(var(--overlay-rgb), 0.14); }
 
-  /* hover:border variants — only fire on hover-capable devices so touch taps
+  /* hover:border variants - only fire on hover-capable devices so touch taps
      don't get stuck in the hovered state. */
   @media (hover: hover) {
     [data-theme='light'] .hover\:border-white\/\[0\.06\]:hover { border-color: rgba(var(--overlay-rgb), 0.12); }
@@ -283,7 +322,7 @@
   [data-theme='light'] .ring-white\/10 { --tw-ring-color: rgba(var(--overlay-rgb), 0.12); }
   [data-theme='light'] .ring-white\/\[0\.08\] { --tw-ring-color: rgba(var(--overlay-rgb), 0.10); }
 
-  /* hover variants — gated to hover-capable devices (same reason). */
+  /* hover variants - gated to hover-capable devices (same reason). */
   @media (hover: hover) {
     [data-theme='light'] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(var(--overlay-rgb), 0.025); }
     [data-theme='light'] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(var(--overlay-rgb), 0.05); }
@@ -297,7 +336,7 @@
   [data-theme='light'] .divide-white\/\[0\.05\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.08); }
   [data-theme='light'] .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.10); }
 
-  /* Amber loses contrast on white — the dark-mode `#fbbf24` becomes a pale
+  /* Amber loses contrast on white - the dark-mode `#fbbf24` becomes a pale
      wash on a light surface. Remap to amber-700 (`#b45309`) in light mode so
      the text and pill chrome stay legible. */
   [data-theme='light'] .text-accent-amber { color: #b45309; }
@@ -308,7 +347,7 @@
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   Recharts overrides — uses CSS variables so colours flip with the theme.
+   Recharts overrides - uses CSS variables so colours flip with the theme.
    ──────────────────────────────────────────────────────────────────────── */
 .recharts-tooltip-cursor {
   stroke: var(--chart-axis) !important;
@@ -336,7 +375,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Pulse ring — used by the Live view PulseVisualizer. */
+/* Pulse ring - used by the Live view PulseVisualizer. */
 @keyframes pulse-ring {
   0%, 100% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.55); opacity: 0; }
@@ -346,3 +385,22 @@
   transform-origin: center;
   will-change: transform, opacity;
 }
+
+/* Page-section entrance - used by Live view so the top-level sections fade
+   and slide up on mount. Framer Motion's `initial` prop is suppressed by the
+   parent AnimatePresence's initial={false}, so CSS gives us a reliable
+   on-mount animation that doesn't depend on framer context. */
+@keyframes section-enter {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-enter {
+  opacity: 0;
+  animation: section-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+.section-enter-d0 { animation-delay: 0ms; }
+.section-enter-d1 { animation-delay: 120ms; }
+.section-enter-d2 { animation-delay: 240ms; }
+.section-enter-d3 { animation-delay: 360ms; }
+.section-enter-d4 { animation-delay: 480ms; }

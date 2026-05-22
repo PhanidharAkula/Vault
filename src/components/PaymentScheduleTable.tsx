@@ -95,12 +95,15 @@ export const PaymentScheduleTable = ({
               setPage(0)
             }}
             placeholder="Search by # or date"
-            className="w-44 bg-transparent outline-none placeholder:text-ink-muted"
+            /* `text-base` (16px) on mobile prevents iOS Safari's automatic
+               zoom-into-input behavior; `sm:text-xs` restores the smaller
+               size everywhere a real keyboard is in play. */
+            className="w-44 bg-transparent text-base outline-none placeholder:text-ink-muted sm:text-xs"
           />
         </div>
       </div>
 
-      {/* Table — wraps in horizontal scroll on mobile so the fixed-grid
+      {/* Table - wraps in horizontal scroll on mobile so the fixed-grid
           columns don't squeeze unreadably. min-w forces the inner grid to
           its full width regardless of viewport. */}
       <div className="overflow-x-auto rounded-2xl border border-white/[0.05]">
@@ -120,11 +123,8 @@ export const PaymentScheduleTable = ({
             const past = r.dueDate <= todayIso
             const isNext = !past && filtered.findIndex((x) => x.dueDate > todayIso) === safePage * pageSize + i
             return (
-              <motion.div
+              <div
                 key={r.srNo}
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.25, delay: i * 0.018 }}
                 className={clsx(
                   'grid grid-cols-[60px_120px_120px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px_minmax(0,1fr)] items-center gap-4 px-4 py-2.5 text-sm transition',
                   past ? 'text-ink-secondary' : 'text-ink-primary',
@@ -164,7 +164,7 @@ export const PaymentScheduleTable = ({
                 <div className="text-right font-semibold tabular">
                   {formatINR(r.totalOutstanding)}
                 </div>
-              </motion.div>
+              </div>
             )
           })}
           {slice.length === 0 && (

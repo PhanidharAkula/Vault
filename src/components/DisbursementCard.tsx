@@ -21,7 +21,7 @@ const COLOR_GLOW = {
   pink: 'shadow-glow-violet', // pink reuses the violet glow shadow (no dedicated pink glow utility)
 } as const
 
-// Soft tone wash that fades into transparency at the corner — no hard edges.
+// Soft tone wash that fades into transparency at the corner - no hard edges.
 const TONE_WASH = {
   violet:
     'bg-[radial-gradient(120%_70%_at_100%_0%,rgba(167,139,250,0.22),rgba(167,139,250,0)_60%)]',
@@ -55,7 +55,7 @@ export const DisbursementCard = ({
       transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
       className={`glass glass-hover group relative overflow-hidden rounded-2xl p-5 text-left ${COLOR_GLOW[d.color]}`}
     >
-      {/* soft tone wash — no hard edges */}
+      {/* soft tone wash - no hard edges */}
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-0 ${TONE_WASH[d.color]}`}

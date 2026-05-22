@@ -10,25 +10,7 @@ const COLORS: Record<string, string> = {
   pink: '#f472b6',
 }
 
-/**
- * Renders the per-disbursement rate-period detail cards.  The big segmented
- * bar that used to sit above this grid was removed — it had no label and the
- * cards below carry every meaningful piece of data (phase #, duration, rate,
- * delta vs previous, start date).
- *
- * `compact={true}` is now a no-op (returns null) — kept on the prop signature
- * so existing call sites don't break, but compact contexts (Tranche cards on
- * the Overview) no longer render anything for rate phases.
- */
-export const RateTimeline = ({
-  disbursement,
-  compact = false,
-}: {
-  disbursement: DisbursementView
-  compact?: boolean
-}) => {
-  if (compact) return null
-
+export const RateTimeline = ({ disbursement }: { disbursement: DisbursementView }) => {
   const periods = disbursement.ratePeriods
   const finalDate = disbursement.finalDate
   const accent = COLORS[disbursement.color] ?? '#a78bfa'

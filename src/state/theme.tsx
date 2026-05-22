@@ -28,9 +28,28 @@ const readInitial = (): Theme => {
   return 'light'
 }
 
+// Page-background hex per theme - kept in sync with the `--bg-base` token in
+// `src/index.css`. Updating the `theme-color` meta makes iOS Safari's URL bar
+// and the bottom toolbar paint with this colour instead of leaving a
+// translucent overlay across the safe-area edges.
+const THEME_COLOR: Record<Theme, string> = {
+  light: '#f7f8fb',
+  dark: '#07080d',
+}
+
 const apply = (theme: Theme) => {
   if (typeof document === 'undefined') return
   document.documentElement.dataset.theme = theme
+  // Replace any existing static `<meta name="theme-color">` tags with one
+  // unmedia-queried entry so the in-app toggle (not just the OS-level
+  // prefers-color-scheme) drives Safari's chrome colour.
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((el) => el.parentNode?.removeChild(el))
+  const meta = document.createElement('meta')
+  meta.name = 'theme-color'
+  meta.content = THEME_COLOR[theme]
+  document.head.appendChild(meta)
 }
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {

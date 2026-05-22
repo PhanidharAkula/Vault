@@ -3,7 +3,7 @@ import { useLayoutEffect, useState } from 'react'
 // Recharts' ResponsiveContainer occasionally mis-measures its parent on first
 // paint (the browser hasn't finished layout yet, or the parent is briefly 0×0
 // during a Framer Motion entrance animation). It only re-measures when the
-// component re-renders or the window resizes — so without a force-rerender,
+// component re-renders or the window resizes - so without a force-rerender,
 // the chart can stay invisible.
 //
 // This hook triggers exactly one re-render on the next animation frame after

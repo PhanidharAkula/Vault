@@ -13,6 +13,7 @@ import {
 import { fmtDateShort, fmtDateLong } from '../../lib/dates'
 import { formatINR, formatINRCompact } from '../../lib/format'
 import type { DisbursementView } from '../../data/loanData'
+import { useChartTick } from '../../lib/useChartTick'
 
 export const PaymentBreakdownChart = ({
   disbursement,
@@ -21,6 +22,7 @@ export const PaymentBreakdownChart = ({
   disbursement: DisbursementView
   todayIso: string
 }) => {
+  useChartTick()
   const data = useMemo(
     () =>
       disbursement.schedule.map((r) => ({

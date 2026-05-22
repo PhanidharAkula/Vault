@@ -2,7 +2,7 @@
 //
 // The dashboard's source of truth is INR (the loan was taken in India and every
 // formula in `lib/calculations.ts` operates on INR amounts). These helpers are
-// the display layer — they read the active currency and live FX rate from
+// the display layer - they read the active currency and live FX rate from
 // `state/currency` and convert to USD at the last possible moment, so accuracy
 // is never affected by the toggle.
 //
@@ -14,7 +14,7 @@ import { getActiveCurrency, getActiveRate } from '../state/currency'
 
 const inrFmt = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 })
 // USD: thousands separators, always two fraction digits so a row of small
-// values reads as a coherent block (e.g. $25.36 / $1,250.00 / $94.00 — not a
+// values reads as a coherent block (e.g. $25.36 / $1,250.00 / $94.00 - not a
 // mix of $25 / $1,250 / $94).
 const usdFmt = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,

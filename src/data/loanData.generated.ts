@@ -1,4 +1,4 @@
-// AUTO-GENERATED from /loan_details.txt — do not edit manually.
+// AUTO-GENERATED from /loan_details.txt - do not edit manually.
 // Regenerate with: node scripts/parse-data.mjs
 
 export type RatePeriod = {
@@ -37,7 +37,7 @@ export type Disbursement = {
 
 export const RAW_DISBURSEMENTS: Disbursement[] = [
   {
-    "applicationNumber": "A8637744070",
+    "applicationNumber": "A2307070270",
     "applicantName": "Phanidhar Akula",
     "disbursedAmount": 2500000,
     "disbursedDate": "2024-07-16",
@@ -1943,7 +1943,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
     ]
   },
   {
-    "applicationNumber": "A8637744070_2",
+    "applicationNumber": "A2307070270_2",
     "applicantName": "Phanidhar Akula",
     "disbursedAmount": 1500000,
     "disbursedDate": "2024-12-13",
@@ -3782,7 +3782,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
     ]
   },
   {
-    "applicationNumber": "A8637744070_3",
+    "applicationNumber": "A2307070270_3",
     "applicantName": "Phanidhar Akula",
     "disbursedAmount": 1500000,
     "disbursedDate": "2025-08-01",
@@ -5532,7 +5532,7 @@ export const RAW_DISBURSEMENTS: Disbursement[] = [
     ]
   },
   {
-    "applicationNumber": "A8637744070_4",
+    "applicationNumber": "A2307070270_4",
     "applicantName": "Phanidhar Akula",
     "disbursedAmount": 500000,
     "disbursedDate": "2026-05-20",

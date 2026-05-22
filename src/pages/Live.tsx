@@ -11,6 +11,7 @@ import { DISBURSEMENTS } from '../data/loanData'
 import { formatINR, formatINRCompact } from '../lib/format'
 import { fmtDateLong } from '../lib/dates'
 import { clockInZone, zoneMidnight } from '../lib/timezone'
+import { useCountUp } from '../lib/useCountUp'
 import { differenceInSeconds } from 'date-fns'
 
 const Live = () => {
@@ -20,10 +21,14 @@ const Live = () => {
 
   const ratePerSec = agg.totalDailyInterest / 86400
   const todayOutstanding = Math.round(agg.totalCurrentOutstanding)
+  // Count up from 0 to the day's outstanding on mount, matching the Overview
+  // hero. Subsequent day-rollovers tween from the previous value to the new
+  // one (handled inside useCountUp).
+  const animatedOutstanding = useCountUp(todayOutstanding, 1700)
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="section-enter section-enter-d0">
         <Pill tone="emerald">Realtime</Pill>
         <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Live view</h1>
         <p className="mt-1 text-sm text-ink-secondary">
@@ -32,43 +37,45 @@ const Live = () => {
         </p>
       </div>
 
-      {/* Hero — daily integer */}
-      <GlassCard pad="lg" className="!p-5 md:!p-7">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-              <Activity size={12} className="text-accent-emerald" />
-              Today's outstanding
-            </div>
-            <div className="mt-3 font-display text-[44px] font-semibold leading-none tracking-tight tabular gradient-text-brand sm:text-[58px] md:text-[72px]">
-              <AnimatedNumber value={todayOutstanding} format={formatINR} duration={1100} />
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-secondary">
-              <Stat label="per minute" value={`+${formatINR(ratePerSec * 60)}`} />
-              <Stat label="per hour" value={`+${formatINR(ratePerSec * 3600)}`} />
-              <Stat label="per day" value={`+${formatINR(agg.totalDailyInterest)}`} />
-              <Stat label="per month" value={`+${formatINRCompact(agg.totalDailyInterest * 30)}`} />
+      {/* Hero - daily integer */}
+      <div className="section-enter section-enter-d1">
+        <GlassCard pad="lg" className="!p-5 md:!p-7">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
+            <div>
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                <Activity size={12} className="text-accent-emerald" />
+                Today's outstanding
+              </div>
+              <div className="mt-3 font-display text-[44px] font-semibold leading-none tracking-tight tabular gradient-text-brand sm:text-[58px] md:text-[72px]">
+                {formatINR(Math.round(animatedOutstanding))}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-secondary">
+                <Stat label="per minute" value={`+${formatINR(ratePerSec * 60)}`} />
+                <Stat label="per hour" value={`+${formatINR(ratePerSec * 3600)}`} />
+                <Stat label="per day" value={`+${formatINR(agg.totalDailyInterest)}`} />
+                <Stat label="per month" value={`+${formatINRCompact(agg.totalDailyInterest * 30)}`} />
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
+                  <Sparkles size={12} className="text-accent-violet" /> Accrued since the last scheduled rest
+                </div>
+                <div className="mt-1 font-display text-3xl font-semibold tabular gradient-text-cyan">
+                  <AnimatedNumber value={Math.round(agg.totalAccruedToday)} format={formatINR} duration={900} />
+                </div>
+                <div className="mt-1 text-[11px] text-ink-tertiary">
+                  {agg.perDisbursement[0]?.daysSinceBaseline ?? 0} days × {formatINR(agg.totalDailyInterest)} / day
+                </div>
+              </div>
             </div>
 
-            <div className="mt-6">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                <Sparkles size={12} className="text-accent-violet" /> Accrued since the last scheduled rest
-              </div>
-              <div className="mt-1 font-display text-3xl font-semibold tabular gradient-text-cyan">
-                <AnimatedNumber value={Math.round(agg.totalAccruedToday)} format={formatINR} duration={900} />
-              </div>
-              <div className="mt-1 text-[11px] text-ink-tertiary">
-                {agg.perDisbursement[0]?.daysSinceBaseline ?? 0} days × {formatINR(agg.totalDailyInterest)} / day
-              </div>
-            </div>
+            <PulseVisualizer />
           </div>
-
-          <PulseVisualizer />
-        </div>
-      </GlassCard>
+        </GlassCard>
+      </div>
 
       {/* Per-tranche live */}
-      <div>
+      <div className="section-enter section-enter-d2">
         <SectionTitle
           eyebrow="Per tranche"
           title="Real-time accrual"
@@ -84,25 +91,29 @@ const Live = () => {
         </div>
       </div>
 
-      {/* Combined countdown — single tile since all tranches share the same due date */}
-      <GlassCard pad="lg">
-        <SectionTitle
-          eyebrow="Countdown"
-          title="Next combined payment"
-          description="All tranches share the same due date and time, one timer covers them all."
-        />
-        <CombinedCountdown agg={agg} />
-      </GlassCard>
+      {/* Combined countdown - single tile since all tranches share the same due date */}
+      <div className="section-enter section-enter-d3">
+        <GlassCard pad="lg">
+          <SectionTitle
+            eyebrow="Countdown"
+            title="Next combined payment"
+            description="All tranches share the same due date and time, one timer covers them all."
+          />
+          <CombinedCountdown agg={agg} />
+        </GlassCard>
+      </div>
 
       {/* Daily heartbeat */}
-      <GlassCard pad="lg">
-        <SectionTitle
-          eyebrow="Heartbeat"
-          title="Today's interest, hour by hour"
-          description="A live progress bar of today, with running cash accrual."
-        />
-        <DayHeartbeat dailyInterest={agg.totalDailyInterest} />
-      </GlassCard>
+      <div className="section-enter section-enter-d4">
+        <GlassCard pad="lg">
+          <SectionTitle
+            eyebrow="Heartbeat"
+            title="Today's interest, hour by hour"
+            description="A live progress bar of today, with running cash accrual."
+          />
+          <DayHeartbeat dailyInterest={agg.totalDailyInterest} />
+        </GlassCard>
+      </div>
     </div>
   )
 }
@@ -282,12 +293,12 @@ const Bit = ({ n, label }: { n: number; label: string }) => (
 const DayHeartbeat = ({ dailyInterest }: { dailyInterest: number }) => {
   const [now, setNow] = useState(new Date())
   useEffect(() => {
-    // tick every 30s — accrual integer doesn't change much faster than that
+    // tick every 30s - accrual integer doesn't change much faster than that
     const id = setInterval(() => setNow(new Date()), 30000)
     return () => clearInterval(id)
   }, [])
-  // Use IST clock for the day-elapsed calculation — the "day" begins/ends at
-  // midnight IST (the bank's day boundary), so the heartbeat fills accordingly.
+  // Day-elapsed calculation is local-timezone based — heartbeat fills from
+  // the viewer's local midnight to the next.
   const c = clockInZone(undefined, now)
   const totalSecondsInDay = 86400
   const elapsedSec = c.hour * 3600 + c.minute * 60 + c.second

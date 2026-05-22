@@ -60,7 +60,7 @@ export const StatCard = ({
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="glass glass-hover relative isolate overflow-hidden rounded-2xl p-5 shadow-inner-soft"
     >
-      {/* soft tone wash — no hard edges */}
+      {/* soft tone wash - no hard edges */}
       <div
         aria-hidden
         className={clsx('pointer-events-none absolute inset-0', TONE_WASH[tone])}

@@ -1,4 +1,4 @@
-# Vault — Loan Intelligence Dashboard
+# Vault - Loan Intelligence Dashboard
 
 A glassmorphic, animated dashboard for tracking a multi-tranche education
 loan end-to-end: live outstanding, rate-revision history, full amortization
@@ -9,15 +9,15 @@ Recharts**.
 
 ## Features
 
-- **6 pages** — Overview, Disbursements, Schedule, Rates, Live, Analytics
+- **6 pages** - Overview, Disbursements, Schedule, Rates, Live, Analytics
 - **Light + dark mode** with persistent preference (light is default)
 - **Daily rollover** anchored to America/New_York midnight (auto handles
   EDT ↔ EST)
-- **Responsive** — slide-out drawer + scaled hero/ring on mobile, untouched
+- **Responsive** - slide-out drawer + scaled hero/ring on mobile, untouched
   desktop layout at ≥ 768px
-- **Live computation** — outstanding, accrued interest, next-due totals,
+- **Live computation** - outstanding, accrued interest, next-due totals,
   countdown timers all derived from the schedule against the current date
-- **Animated entrances** — count-up numbers, draw-on-mount progress arcs,
+- **Animated entrances** - count-up numbers, draw-on-mount progress arcs,
   staggered list reveals
 - **Indian numbering** with `₹` formatting (lakhs / crores)
 
@@ -74,7 +74,7 @@ on every push to `main`.
 
 1. Push the repo to GitHub (private repo works on the Student / Pro plan).
 2. **Settings → Pages → Source → GitHub Actions**.
-3. Push to `main` (or click *Run workflow* in the Actions tab) — the site
+3. Push to `main` (or click *Run workflow* in the Actions tab) - the site
    deploys automatically.
 
 `vite.config.ts` sets `base: './'` so the build works at any sub-path
@@ -91,5 +91,5 @@ node scripts/parse-data.mjs
 ```
 
 The script's `SRC` path is configured in
-[`scripts/parse-data.mjs`](./scripts/parse-data.mjs) — adjust it if your
+[`scripts/parse-data.mjs`](./scripts/parse-data.mjs) - adjust it if your
 source file lives elsewhere.

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
 // All loan calculations live in INR (where the loan was taken). USD is purely a
-// display preference — the formatINR / formatINRCompact helpers convert at the
+// display preference - the formatINR / formatINRCompact helpers convert at the
 // moment of rendering. That keeps the source of truth (and every formula) on
 // the bank's own currency for accuracy.
 
@@ -59,7 +59,7 @@ const fetchLiveRate = async (): Promise<number | null> => {
     const inr = data?.rates?.INR
     if (typeof inr === 'number' && inr > 0) return inr
   } catch {
-    /* network failure — caller falls back to static rate */
+    /* network failure - caller falls back to static rate */
   }
   return null
 }
@@ -69,7 +69,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [rate, setRate] = useState<number>(FALLBACK_INR_PER_USD)
   const [rateSource, setRateSource] = useState<string>('fallback')
 
-  // Keep the module-level mirrors aligned every render (not in useEffect — that
+  // Keep the module-level mirrors aligned every render (not in useEffect - that
   // would lag one paint behind). React batches updates, so every consumer sees
   // the same `activeCurrency` / `activeRate` once a toggle commits.
   activeCurrency = currency
@@ -86,7 +86,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch the live FX rate on every mount (i.e. every page refresh). Runs as a
   // post-paint effect, so the page is interactive from t=0 with the fallback;
-  // the fresh rate lands ~200ms later and replaces it. No caching — keeps the
+  // the fresh rate lands ~200ms later and replaces it. No caching - keeps the
   // logic simple and ensures users always see a rate ≤ a few seconds old.
   useEffect(() => {
     let cancelled = false

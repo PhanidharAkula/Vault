@@ -37,7 +37,7 @@ const Sidebar = ({
   onNavigate: (k: RouteKey) => void
   /** Drawer state for mobile (`< md`). Ignored on `md+` where the sidebar is permanent. */
   drawerOpen?: boolean
-  /** Reserved — drawer is closed by route changes (handled in App.tsx) and by tapping the backdrop. */
+  /** Reserved - drawer is closed by route changes (handled in App.tsx) and by tapping the backdrop. */
   onCloseDrawer?: () => void
 }) => {
   return (
@@ -127,8 +127,12 @@ const Sidebar = ({
           iOS Safari's collapsing bottom toolbar (which eats viewport height
           even on iPad). Full desktop (`lg+`) keeps the original 24px. */}
       <div className="space-y-3 px-4 pb-14 pt-4 lg:pb-6">
-        <ThemeToggle />
-        <CurrencyToggle />
+        {/* Theme + currency toggles live in the mobile top bar (App.tsx)
+            below md, so they're hidden here on mobile to avoid duplication. */}
+        <div className="hidden space-y-3 md:block">
+          <ThemeToggle />
+          <CurrencyToggle />
+        </div>
         <LiveSystemCard />
       </div>
     </aside>
@@ -187,10 +191,10 @@ const CurrencyToggle = () => {
         type="button"
         onClick={toggle}
         aria-label={`Display amounts in ${isUSD ? 'INR' : 'USD'}`}
-        title={`1 USD ≈ ₹${rate.toFixed(2)} — calculations stay in INR`}
+        title={`1 USD ≈ ₹${rate.toFixed(2)} - calculations stay in INR`}
         className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-1.5 text-sm transition hover:border-white/[0.12]"
       >
-        {/* Sliding pill — brand-violet for USD on the left, emerald for INR
+        {/* Sliding pill - brand-violet for USD on the left, emerald for INR
             (the source of truth) on the right. */}
         <motion.div
           layout

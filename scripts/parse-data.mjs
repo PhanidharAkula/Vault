@@ -103,7 +103,7 @@ if (cur) disbursements.push(cur)
 
 mkdirSync(dirname(OUT), { recursive: true })
 
-const ts = `// AUTO-GENERATED from /loan_details.txt — do not edit manually.
+const ts = `// AUTO-GENERATED from /loan_details.txt - do not edit manually.
 // Regenerate with: node scripts/parse-data.mjs
 
 export type RatePeriod = {

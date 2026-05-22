@@ -86,7 +86,7 @@ const Disbursements = ({
         </div>
       </div>
 
-      {/* Tabs — stack vertically on mobile so each tranche row stays full-width */}
+      {/* Tabs - stack vertically on mobile so each tranche row stays full-width */}
       <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-1.5 sm:flex-row sm:flex-wrap sm:items-center">
         {DISBURSEMENTS.map((item, i) => {
           const active = activeIdx === i
@@ -121,7 +121,7 @@ const Disbursements = ({
         })}
       </div>
 
-      {/* KPI strip — see Overview.tsx for the rationale on the lg breakpoint. */}
+      {/* KPI strip - see Overview.tsx for the rationale on the lg breakpoint. */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Outstanding"

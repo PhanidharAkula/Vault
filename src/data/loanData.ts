@@ -4,7 +4,7 @@ import type { Disbursement, RatePeriod, SchedulePayment } from './loanData.gener
 export type { Disbursement, RatePeriod, SchedulePayment }
 
 // Color is assigned by tranche index. Add more colors here as new tranches
-// are added — must stay in sync with switch sites that paint dot/pill colors
+// are added - must stay in sync with switch sites that paint dot/pill colors
 // (search the codebase for `color === 'violet'` for the touchpoints).
 const COLORS = ['violet', 'cyan', 'emerald', 'pink'] as const
 

@@ -10,7 +10,7 @@ import LivePage from './pages/Live'
 import AnalyticsPage from './pages/Analytics'
 import { TodayProvider } from './state/today'
 import { ThemeProvider, useTheme } from './state/theme'
-import { CurrencyProvider } from './state/currency'
+import { CurrencyProvider, useCurrency } from './state/currency'
 
 const VALID_ROUTES: RouteKey[] = ['overview', 'disbursements', 'schedule', 'rates', 'live', 'analytics']
 
@@ -26,7 +26,7 @@ const PageRouter = () => {
   // Allow opening a specific disbursement detail
   const [selectedDisbursement, setSelectedDisbursement] = useState<number | null>(null)
 
-  // Mobile sidebar drawer state — only matters below `md` (768px). On `md+`
+  // Mobile sidebar drawer state - only matters below `md` (768px). On `md+`
   // the sidebar is permanently visible and this flag is ignored.
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -71,7 +71,7 @@ const PageRouter = () => {
     }
   }, [drawerOpen])
 
-  // Scroll to top in the gap between exit and enter — invisible to the user.
+  // Scroll to top in the gap between exit and enter - invisible to the user.
   // Doing it before setRoute makes the current page visibly jump to the top
   // before fading out; doing it after the new page mounts feels late.
   // `onExitComplete` fires when the old motion.div has finished exiting, but
@@ -120,7 +120,7 @@ const PageRouter = () => {
         className="pointer-events-none fixed inset-0 -z-10 grid-bg opacity-[0.35]"
         aria-hidden
       />
-      {/* Hamburger toggle — shown only below md, AND only while the drawer
+      {/* Hamburger toggle - shown only below md, AND only while the drawer
           is closed. When the drawer is open the user closes it by tapping
           the backdrop or pressing Escape, so an explicit close button would
           just overlap the sidebar's own logo. */}
@@ -136,12 +136,17 @@ const PageRouter = () => {
         </button>
       )}
 
-      {/* Quick theme toggle — mobile only. Mirrors the hamburger on the right
-          so the top bar feels balanced and theme can flip without opening the
-          drawer. Desktop already has the full Light/Dark pill in the sidebar. */}
-      {!drawerOpen && <MobileThemeButton />}
+      {/* Quick toggles - mobile only. Mirrors the hamburger on the right so
+          the top bar feels balanced. Currency sits to the left of theme.
+          Desktop has the full pills inside the sidebar. */}
+      {!drawerOpen && (
+        <div className="fixed right-4 top-4 z-50 flex items-center gap-2 md:hidden">
+          <MobileCurrencyButton />
+          <MobileThemeButton />
+        </div>
+      )}
 
-      {/* Backdrop — only on mobile when drawer is open. */}
+      {/* Backdrop - only on mobile when drawer is open. */}
       <AnimatePresence>
         {drawerOpen && (
           <motion.div
@@ -188,13 +193,30 @@ const MobileThemeButton = () => {
       type="button"
       onClick={toggle}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className="fixed right-4 top-4 z-50 grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 shadow-lg backdrop-blur-md transition-colors md:hidden"
+      className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 shadow-lg backdrop-blur-md transition-colors"
     >
       {isDark ? (
         <Moon size={18} className="text-brand-300" />
       ) : (
         <Sun size={18} className="text-accent-amber" />
       )}
+    </button>
+  )
+}
+
+const MobileCurrencyButton = () => {
+  const { currency, toggle } = useCurrency()
+  const isUSD = currency === 'USD'
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={`Display amounts in ${isUSD ? 'INR' : 'USD'}`}
+      className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 font-mono text-[15px] font-semibold shadow-lg backdrop-blur-md transition-colors"
+    >
+      <span className={isUSD ? 'text-brand-300' : 'text-accent-emerald'}>
+        {isUSD ? '$' : '₹'}
+      </span>
     </button>
   )
 }

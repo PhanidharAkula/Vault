@@ -84,7 +84,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
       {/* Hero */}
       <LiveOutstandingHero />
 
-      {/* KPI strip — tighter than 3-up at md (820px iPad portrait) makes the
+      {/* KPI strip - tighter than 3-up at md (820px iPad portrait) makes the
           values overflow ('L' suffix wraps), so we hold 2-up until lg+. */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
@@ -105,7 +105,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           hint={
             agg.totalPrincipalPaid > 0
               ? `${agg.totalPaid > 0 ? `${formatINRCompact(agg.totalPaid)} cash out` : ''}`
-              : 'EMI starts Sep 2027'
+              : `EMI starts ${fmtDateLong(fullEmiStartDate).replace(/^\d+ /, '').replace(', 20', " '")}`
           }
           index={1}
         />
@@ -246,7 +246,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
                   payment (₹1.29 Cr). Using `totalDisbursed` here instead of the
                   `principal` column sum, because that column also includes the
                   pre-EMI accrued interest (≈₹17L) that gets repaid via EMI
-                  principal — counting it again under Principal would double up. */}
+                  principal - counting it again under Principal would double up. */}
               <SplitBar
                 label="Principal"
                 value={agg.totalDisbursed}
@@ -272,7 +272,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
         <SectionTitle
           eyebrow="Per disbursement"
           title="Tranche performance"
-          description="Click any tranche to dive into its full schedule, rate moves, and projection."
+          description="Open any tranche for its full schedule, rate moves, and projection."
           right={
             <div className="hidden items-center gap-2 text-[11px] text-ink-tertiary md:flex">
               <Layers size={14} /> {DISBURSEMENTS.length} disbursements active
@@ -297,19 +297,19 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           eyebrow="Cost ratio"
           title={formatINRCompact(agg.totalPlannedInterest)}
           subtitle="lifetime interest"
-          body={`${formatINRCompact(agg.totalPlannedInterest)} in total interest charges over the loan's lifetime — roughly ${(agg.totalPlannedInterest / agg.totalDisbursed * 100).toFixed(0)}% of the principal disbursed.`}
+          body={`Roughly ${(agg.totalPlannedInterest / agg.totalDisbursed * 100).toFixed(0)}% of the principal disbursed.`}
         />
         <Insight
           eyebrow="EMI horizon"
           title={fmtDateLong(fullEmiStartDate)}
           subtitle="full EMI begins"
-          body={`From ${fmtDateLong(fullEmiStartDate)}, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)}. That's when principal repayment kicks in.`}
+          body={`From this date, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)} - when principal repayment kicks in.`}
         />
         <Insight
           eyebrow="Burn rate"
           title={formatINR(Math.round(agg.totalDailyInterest * 30))}
           subtitle="interest / month"
-          body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day, or ${formatINRCompact(agg.totalDailyInterest * 30)} every month.`}
+          body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day.`}
         />
       </motion.div>
     </div>

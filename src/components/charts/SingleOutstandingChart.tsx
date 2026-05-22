@@ -14,6 +14,7 @@ import {
 import { fmtDateShort, fmtDateLong } from '../../lib/dates'
 import { formatINR, formatINRCompact, formatPercent } from '../../lib/format'
 import type { DisbursementView } from '../../data/loanData'
+import { useChartTick } from '../../lib/useChartTick'
 
 const TONE: Record<string, { stroke: string; gradId: string; gradFrom: string; gradTo: string }> = {
   violet: { stroke: '#a78bfa', gradId: 'soV', gradFrom: '#a78bfa', gradTo: '#a78bfa' },
@@ -31,6 +32,7 @@ export const SingleOutstandingChart = ({
   todayIso: string
   height?: number
 }) => {
+  useChartTick()
   // Memoize so Recharts doesn't replay its animation every TodayProvider tick
   const data = useMemo(
     () => [
@@ -76,6 +78,10 @@ export const SingleOutstandingChart = ({
             tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
             tick={{ fontSize: 11 }}
             width={64}
+            /* Pad the top of the scale by ~15% so the peak of the area
+               doesn't sit flush against the chart's top edge - there's a
+               tick mark above the data's max for breathing room. */
+            domain={[0, (max: number) => max * 1.15]}
           />
           <Tooltip content={<TT />} cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeDasharray: '4 4' }} />
 

@@ -16,12 +16,14 @@ import { DISBURSEMENTS } from '../../data/loanData'
 import { buildCombinedTimeline } from '../../lib/calculations'
 import { fmtDateShort, fmtDateLong } from '../../lib/dates'
 import { formatINRCompact, formatINR } from '../../lib/format'
+import { useChartTick } from '../../lib/useChartTick'
 
 type Mode = 'total' | 'stacked'
 
 const COLOR = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
+  useChartTick()
   const [mode, setMode] = useState<Mode>('stacked')
   const data = useMemo(() => buildCombinedTimeline(), [])
 
@@ -29,11 +31,11 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
           Outstanding · Past, present & future
         </div>
-        <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+        <div className="flex w-fit items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
           {(['stacked', 'total'] as const).map((m) => (
             <button
               key={m}
@@ -85,6 +87,10 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
               tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
               tick={{ fontSize: 11 }}
               width={64}
+              /* Pad the top of the scale by ~15% so the peak of the area
+                 doesn't sit flush against the chart's top edge - there's a
+                 tick mark above the data's max for breathing room. */
+              domain={[0, (max: number) => max * 1.15]}
             />
             <Tooltip content={<TimelineTooltip mode={mode} />} cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeDasharray: '4 4' }} />
 

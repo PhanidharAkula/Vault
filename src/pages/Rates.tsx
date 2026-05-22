@@ -7,6 +7,7 @@ import { useTodayIso } from '../state/today'
 import { useCurrency } from '../state/currency'
 import { fmtDateLong } from '../lib/dates'
 import { formatPercent } from '../lib/format'
+import { useChartTick } from '../lib/useChartTick'
 import { parseISO, format } from 'date-fns'
 import {
   CartesianGrid,
@@ -25,6 +26,7 @@ type Event = { date: string; disb: number; from: number; to: number; rate: numbe
 const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
 
 const Rates = () => {
+  useChartTick()
   const todayIso = useTodayIso()
   useCurrency() // subscribe so currency toggle re-renders rate-derived values
 
@@ -186,7 +188,7 @@ const Rates = () => {
                     </span>
                   </div>
                 </div>
-                {/* Right summary is supplementary — the description already
+                {/* Right summary is supplementary - the description already
                     conveys the key info (e.g. "rate revised to 11.70%"). On
                     narrow screens we hide it so the row stays readable; at
                     sm+ it pins to the right with the From → To breakdown. */}
