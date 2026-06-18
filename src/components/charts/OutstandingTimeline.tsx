@@ -62,7 +62,11 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
             <YAxis
               tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
               tick={{ fontSize: 10 }}
-              width={64}
+              /* A touch wider than the single-tranche chart: the combined total
+                 reaches 7-glyph labels ("89.39 L"), and Recharts can over-measure
+                 the width (it measures before the web font applies) and break on
+                 the space, wrapping to two lines. The extra room keeps one line. */
+              width={74}
               /* Pad the top of the scale ~15% so the peak doesn't sit flush
                  against the chart's top edge. */
               domain={[0, (max: number) => max * 1.15]}
