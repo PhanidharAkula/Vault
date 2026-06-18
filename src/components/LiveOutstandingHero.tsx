@@ -1,31 +1,60 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, CalendarClock, TrendingUp, Zap } from 'lucide-react'
-import { useTodayIso } from '../state/today'
+import { useNow, useTodayIso } from '../state/today'
+import { useCurrency } from '../state/currency'
 import { computeAggregate } from '../lib/calculations'
 import { DISBURSEMENTS, MASTER } from '../data/loanData'
-import { formatINR, formatINRCompact } from '../lib/format'
+import { formatINR, formatINRCompact, formatINRPrecise } from '../lib/format'
 import { fmtDateLong, monthsBetween, tenureToYM } from '../lib/dates'
-import { useCountUp } from '../lib/useCountUp'
+import { clockInZone } from '../lib/timezone'
+import { Odometer } from './ui/Odometer'
+import { Gauge } from './ui/Gauge'
+import { Guilloche } from './ui/decor'
+import { Ticks } from './ui/Plate'
+
+const GAUGE_SIZE = 268
+const ROSETTE_SIZE = 322
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+
+// Winds the odometer from zero to the live value in a handful of discrete
+// steps (not per-frame - each step lets the digit wheels complete a roll).
+const useWindUp = (steps = 10, interval = 110): number => {
+  const [t, setT] = useState(0)
+  useEffect(() => {
+    let i = 0
+    const id = setInterval(() => {
+      i++
+      setT(easeOut(i / steps))
+      if (i >= steps) clearInterval(id)
+    }, interval)
+    return () => clearInterval(id)
+  }, [steps, interval])
+  return t
+}
 
 export const LiveOutstandingHero = () => {
   const todayIso = useTodayIso()
+  const now = useNow()
+  const { currency, rate } = useCurrency()
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
-  // Today's outstanding - recomputed once per day (no per-second tick)
-  const outstanding = Math.round(agg.totalCurrentOutstanding)
+  // The honest now-number: today's outstanding plus the fraction of today's
+  // interest that has accrued since local midnight. The paise wheels roll
+  // because this really is growing every second.
+  const clock = clockInZone(undefined, now)
+  const dayFrac = (clock.hour * 3600 + clock.minute * 60 + clock.second) / 86400
+  const liveOutstanding = agg.totalCurrentOutstanding + agg.totalDailyInterest * dayFrac
 
-  // Count up from 0 → outstanding on mount (and from previous → new on day rollover).
-  // Driven by `useCountUp` (defined at the bottom of this file), which uses plain
-  // requestAnimationFrame so it isn't suppressed by the page-level
-  // `<AnimatePresence initial={false}>` the way framer-motion variants are.
-  const animatedOutstanding = useCountUp(outstanding, 1700)
+  const windT = useWindUp()
+  const displayed = liveOutstanding * windT
+
+  const perSec = agg.totalDailyInterest / 86400
+  const perSecLabel =
+    currency === 'USD' ? `$${(perSec / rate).toFixed(6)}` : `₹${perSec.toFixed(4)}`
 
   const utilizationPct = (agg.totalCurrentOutstanding / agg.totalDisbursed) * 100
   const growthPct = utilizationPct - 100 // positive when outstanding > disbursed
 
-  // Tenure progress - measured from the earliest disbursement date to the
-  // master final maturity. Gives a single "how far through the loan are we"
-  // number that pairs nicely with Net growth (money) as a second axis (time).
+  // Tenure progress - earliest disbursement to master final maturity.
   const startIso = DISBURSEMENTS.reduce(
     (a, d) => (d.disbursedDate < a ? d.disbursedDate : a),
     DISBURSEMENTS[0].disbursedDate,
@@ -35,220 +64,122 @@ export const LiveOutstandingHero = () => {
   const tenurePct = Math.min(100, (monthsElapsed / monthsTotal) * 100)
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-bg-elevated/80 via-bg-surface/60 to-bg-base/30 p-5 shadow-glow md:p-7">
-      {/* Soft radial washes - fade to transparent before reaching the card edges,
-          so there are no clipped-circle hard arcs at the corners. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_70%_at_100%_0%,rgba(99,102,241,0.32),rgba(99,102,241,0)_60%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_65%_at_0%_100%,rgba(167,139,250,0.24),rgba(167,139,250,0)_60%)]"
-      />
+    <div className="plate relative overflow-hidden p-5 md:p-7">
+      <Ticks />
 
-      <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-emerald" />
-            Today's outstanding · refreshed daily
+      <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[1.55fr_1fr]">
+        {/* ── the counter ── */}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="etch flex items-center gap-2">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-vermillion blink" />
+              Outstanding - live accrual
+            </div>
+            <div className="hidden text-[10px] tracking-[0.12em] text-ink-muted sm:block">
+              № {MASTER.applicationNumber} · master
+            </div>
           </div>
-          <div className="mt-3 flex items-end gap-2">
-            <span className="font-display text-[40px] font-semibold leading-none tracking-tight tabular gradient-text-brand sm:text-[52px] md:text-[64px]">
-              {formatINR(Math.round(animatedOutstanding))}
+
+          <div className="mt-4 overflow-x-clip">
+            <Odometer
+              value={displayed}
+              format={formatINRPrecise}
+              className="text-[clamp(30px,7.2vw,58px)] font-medium tabular tracking-tight text-ink-primary"
+            />
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-1.5 text-[11px] text-ink-tertiary">
+            <span>
+              <span className="font-semibold tabular text-vermillion">
+                +{formatINR(agg.totalDailyInterest)}
+              </span>{' '}
+              / day
             </span>
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-secondary">
-            <div className="inline-flex items-center gap-1.5">
-              <TrendingUp size={14} className="text-accent-rose" />
-              <span>
-                +{formatINRCompact(agg.totalDailyInterest)}{' '}
-                <span className="text-ink-tertiary">/ day · interest</span>
-              </span>
-            </div>
-            <div className="inline-flex items-center gap-1.5">
-              <Zap size={14} className="text-accent-amber" />
-              <span>
-                +{formatINRCompact(agg.totalDailyInterest * 30)}{' '}
-                <span className="text-ink-tertiary">/ month · interest</span>
-              </span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 text-ink-tertiary">
-              <CalendarClock size={13} className="text-accent-emerald" />
-              <span>{fmtDateLong(todayIso)}</span>
-            </div>
+            <span>
+              <span className="font-semibold tabular text-vermillion">
+                +{formatINRCompact(agg.totalDailyInterest * 30)}
+              </span>{' '}
+              / month
+            </span>
+            <span>
+              <span className="font-semibold tabular text-gold">{perSecLabel}</span> / second
+            </span>
+            <span className="text-ink-muted">{fmtDateLong(todayIso)}</span>
           </div>
 
-          {/* Contextual tiles - both unique to the hero (not in the KPI strip
-              below). The entire row is hidden on mobile so the hero's big
-              number and rate stats lead; both tiles surface from sm+ where
-              there's horizontal room for them. */}
-          <div className="mt-6 hidden flex-wrap gap-3 sm:flex">
-            <Tile
+          {/* Contextual cells - hidden on mobile so the counter leads. */}
+          <div className="mt-7 hidden gap-3 sm:flex sm:flex-wrap">
+            <HeroCell
               label="Net growth since disbursement"
               value={formatINRCompact(agg.totalCurrentOutstanding - agg.totalDisbursed)}
               caption={`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}% above the ${formatINRCompact(agg.totalDisbursed)} principal`}
+              tone="text-vermillion"
             />
-            <Tile
+            <HeroCell
               label="Tenure complete"
               value={`${tenurePct.toFixed(1)}%`}
               caption={`${tenureToYM(monthsElapsed)} in · ${tenureToYM(monthsTotal - monthsElapsed)} to go`}
+              tone="text-gold"
             />
           </div>
         </div>
 
-        {/* Progress ring with proper layout */}
-        <div className="relative grid place-items-center">
-          <ProgressRing growthPct={growthPct} accruedSinceBaseline={agg.totalAccruedToday} />
+        {/* ── the dial ── */}
+        <div className="grid place-items-center py-2">
+          <div className="relative">
+            {/* Rosette watermark, concentric with the needle pivot. The pivot
+                sits at exactly (size/2, size/2) of the gauge box - CY is 50 in
+                a 0..86 viewBox, so size·0.86·(50/86) = size/2. A radial mask
+                fades the rings out so the plate edge can never clip a hard
+                circle on short layouts. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
+              style={{
+                left: '50%',
+                top: GAUGE_SIZE / 2,
+                transform: 'translate(-50%, -50%)',
+                maskImage:
+                  'radial-gradient(closest-side, black 25%, rgba(0,0,0,0.4) 55%, transparent 76%)',
+                WebkitMaskImage:
+                  'radial-gradient(closest-side, black 25%, rgba(0,0,0,0.4) 55%, transparent 76%)',
+              }}
+            >
+              <Guilloche size={ROSETTE_SIZE} petals={20} opacity={0.32} />
+            </div>
+            <Gauge
+              value={growthPct}
+              min={0}
+              max={30}
+              format={(v) => `+${v.toFixed(1)}%`}
+              accent="rgb(var(--c-vermillion))"
+              label="growth vs principal"
+              sublabel={`+${formatINRCompact(agg.totalAccruedToday)} since last rest`}
+              size={GAUGE_SIZE}
+            />
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-const Tile = ({ label, value, caption }: { label: string; value: string; caption: string }) => (
-  <div className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-bg-elevated/40 px-3 py-3">
-    <div className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-ink-tertiary">
-      {label}
+const HeroCell = ({
+  label,
+  value,
+  caption,
+  tone,
+}: {
+  label: string
+  value: string
+  caption: string
+  tone: string
+}) => (
+  <div className="border border-line bg-bg-base px-3.5 py-3">
+    <div className="etch whitespace-nowrap !text-[9px]">{label}</div>
+    <div className={`display-num mt-1.5 font-display text-lg font-medium leading-none ${tone}`}>
+      {value}
     </div>
-    <div className="mt-1 font-display text-lg font-semibold tabular">{value}</div>
-    <div className="text-[10px] text-ink-muted">{caption}</div>
+    <div className="mt-1 text-[10px] text-ink-tertiary">{caption}</div>
   </div>
 )
-
-const ProgressRing = ({
-  growthPct,
-  accruedSinceBaseline,
-}: {
-  growthPct: number
-  accruedSinceBaseline: number
-}) => {
-  const SIZE = 256
-  const r = 106
-  const stroke = 12
-  const c = 2 * Math.PI * r
-  // Visualization scale: 0% growth = empty, 30% growth = full ring
-  const visPct = Math.min(100, Math.max(0, (growthPct / 30) * 100))
-  const offset = c - (visPct / 100) * c
-  const cx = SIZE / 2
-  const cy = SIZE / 2
-
-  // Single mount-time flag drives every entrance animation in the ring.
-  // We start `drawn=false` (arc hidden, text faded down), then flip to true
-  // after two animation frames so the browser commits the initial paint first.
-  // CSS transitions on each element interpolate to the final state.
-  const [drawn, setDrawn] = useState(false)
-  useEffect(() => {
-    let r2 = 0
-    const r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(() => setDrawn(true))
-    })
-    return () => {
-      cancelAnimationFrame(r1)
-      cancelAnimationFrame(r2)
-    }
-  }, [])
-
-  // Count up from 0 → growthPct, kicked off when `drawn` flips to true.
-  const animatedPct = useCountUp(drawn ? growthPct : 0, 1500)
-
-  // Easing for staggered text reveals
-  const easeOut = 'cubic-bezier(0.22, 1, 0.36, 1)'
-
-  return (
-    // Outer wrapper scales the SVG via CSS at <md so the ring fits on mobile
-    // without changing any of the math (cx, cy, r) - viewBox handles scaling.
-    <div className="relative h-[240px] w-[240px] md:h-[256px] md:w-[256px]">
-      <svg width="100%" height="100%" viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <defs>
-          <linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#a5b4fc" />
-            <stop offset="0.5" stopColor="#c084fc" />
-            <stop offset="1" stopColor="#22d3ee" />
-          </linearGradient>
-        </defs>
-
-        {/* track - CSS variable so it flips with the theme */}
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r}
-          stroke="var(--ring-track)"
-          strokeWidth={stroke}
-          fill="none"
-        />
-
-        {/* progress arc - draws once on mount (page refresh) via CSS transition */}
-        <g transform={`rotate(-90 ${cx} ${cy})`}>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            stroke="url(#ringG)"
-            strokeWidth={stroke}
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray={c}
-            strokeDashoffset={drawn ? offset : c}
-            style={{ transition: `stroke-dashoffset 1.6s ${easeOut}` }}
-          />
-        </g>
-      </svg>
-
-      <div className="absolute inset-0 grid place-items-center">
-        <div className="text-center">
-          {/* eyebrow - fades in first */}
-          <div
-            className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary"
-            style={{
-              opacity: drawn ? 1 : 0,
-              transform: drawn ? 'translateY(0)' : 'translateY(6px)',
-              transition: `opacity 0.5s ${easeOut} 0.15s, transform 0.5s ${easeOut} 0.15s`,
-            }}
-          >
-            growth
-          </div>
-
-          {/* count-up percentage - number ticks 0 → growthPct as the arc draws */}
-          <div
-            className="mt-0.5 font-display text-[32px] font-semibold leading-none tabular gradient-text-cyan md:text-[42px]"
-            style={{
-              opacity: drawn ? 1 : 0,
-              transform: drawn ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.92)',
-              transition: `opacity 0.6s ${easeOut} 0.2s, transform 0.7s ${easeOut} 0.2s`,
-            }}
-          >
-            {animatedPct >= 0 ? '+' : ''}
-            {animatedPct.toFixed(1)}%
-          </div>
-
-          {/* subtitle */}
-          <div
-            className="mt-1 text-[10px] text-ink-tertiary"
-            style={{
-              opacity: drawn ? 1 : 0,
-              transform: drawn ? 'translateY(0)' : 'translateY(6px)',
-              transition: `opacity 0.5s ${easeOut} 0.55s, transform 0.5s ${easeOut} 0.55s`,
-            }}
-          >
-            vs disbursed
-          </div>
-
-          {/* amber pill */}
-          <div
-            className="mt-2 inline-flex items-center gap-1 rounded-full border border-accent-amber/25 bg-accent-amber/10 px-2 py-0.5 text-[9px] text-accent-amber tabular"
-            style={{
-              opacity: drawn ? 1 : 0,
-              transform: drawn ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.9)',
-              transition: `opacity 0.6s ${easeOut} 0.8s, transform 0.6s ${easeOut} 0.8s`,
-            }}
-          >
-            <ArrowUpRight size={9} />
-            +{formatINRCompact(accruedSinceBaseline)} since rest
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-

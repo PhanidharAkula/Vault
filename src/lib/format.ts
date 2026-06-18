@@ -48,4 +48,18 @@ export const formatINRCompact = (inrAmount: number): string => {
   return `₹${inrAmount.toFixed(0)}`
 }
 
+// Full-precision variant for the live odometer - always two fraction digits
+// (paise / cents) so the least-significant wheels have something to roll.
+const inrPreciseFmt = new Intl.NumberFormat('en-IN', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+export const formatINRPrecise = (inrAmount: number): string => {
+  if (getActiveCurrency() === 'USD') {
+    return `$${usdFmt.format(inrAmount / getActiveRate())}`
+  }
+  return `₹${inrPreciseFmt.format(inrAmount)}`
+}
+
 export const formatPercent = (n: number, decimals = 2): string => `${n.toFixed(decimals)}%`

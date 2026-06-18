@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
 import clsx from 'clsx'
-import { CalendarClock, ChevronDown, ChevronRight, Filter } from 'lucide-react'
-import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
-import { DISBURSEMENTS } from '../data/loanData'
+import { Plate, SectionTitle, Tag, InkSwatch } from '../components/ui/Plate'
+import { Stamp } from '../components/ui/decor'
+import { DISBURSEMENTS, TRANCHE_VAR } from '../data/loanData'
 import type { DisbursementView, SchedulePayment } from '../data/loanData'
 import { fmtDate, fmtDateLong, formatRelative } from '../lib/dates'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
@@ -42,8 +43,7 @@ const Schedule = () => {
       groups[key] = groups[key] ?? []
       groups[key].push(x)
     }
-    const sorted = Object.entries(groups).sort(([a], [b]) => (a < b ? -1 : 1))
-    return sorted
+    return Object.entries(groups).sort(([a], [b]) => (a < b ? -1 : 1))
   }, [filtered])
 
   const todayMonth = todayIso.slice(0, 7)
@@ -53,57 +53,32 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Pill>Master schedule</Pill>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
-            All payments, every tranche
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag tone="gold">Plate 03</Tag>
+            <Tag>Master schedule</Tag>
+          </div>
+          <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight md:text-[36px]">
+            Every payment, every tranche<span className="text-vermillion">.</span>
           </h1>
-          <p className="mt-1 text-sm text-ink-secondary">
-            {DISBURSEMENTS.reduce((s, d) => s + d.schedule.length, 0)} planned payments across{' '}
+          <p className="mt-1.5 text-xs text-ink-secondary">
+            {DISBURSEMENTS.reduce((s, d) => s + d.schedule.length, 0)} planned entries across{' '}
             {DISBURSEMENTS.length} disbursements.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+          <div className="seg">
             {(['date', 'tranche'] as const).map((g) => (
-              <button
-                key={g}
-                onClick={() => setGroupBy(g)}
-                className={clsx(
-                  'relative rounded-full px-3 py-1 capitalize transition',
-                  groupBy === g ? 'text-ink-primary' : 'text-ink-tertiary hover:text-ink-secondary',
-                )}
-              >
-                {groupBy === g && (
-                  <motion.div
-                    layoutId="grpBg"
-                    className="absolute inset-0 -z-10 rounded-full bg-white/[0.06]"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                Group by {g}
+              <button key={g} data-on={groupBy === g} onClick={() => setGroupBy(g)} className="seg-btn capitalize">
+                by {g}
               </button>
             ))}
           </div>
-          <div className="flex items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+          <div className="seg">
             {(['all', 'past', 'future'] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={clsx(
-                  'relative rounded-full px-3 py-1 capitalize transition',
-                  filter === f ? 'text-ink-primary' : 'text-ink-tertiary hover:text-ink-secondary',
-                )}
-              >
-                {filter === f && (
-                  <motion.div
-                    layoutId="fltBg"
-                    className="absolute inset-0 -z-10 rounded-full bg-white/[0.06]"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
+              <button key={f} data-on={filter === f} onClick={() => setFilter(f)} className="seg-btn capitalize">
                 {f}
               </button>
             ))}
@@ -111,65 +86,45 @@ const Schedule = () => {
         </div>
       </div>
 
-      {/* Next due banner - combined across all tranches */}
+      {/* Due notice banner - combined across all tranches */}
       {agg.nextDueDate && (
-        <GlassCard pad="lg" tone="emerald">
+        <Plate pad="lg" tone="gold">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent-emerald/15 text-accent-emerald ring-1 ring-accent-emerald/30">
-                <CalendarClock size={20} />
+            <div>
+              <Tag tone="gold">Due notice · combined</Tag>
+              <div className="display-num mt-2.5 font-display text-3xl font-medium text-gold">
+                {formatINR(agg.nextDueTotal)}
               </div>
-              <div>
-                <Pill tone="emerald">Next due · combined</Pill>
-                <div className="mt-2 font-display text-3xl font-semibold tabular gradient-text-emerald">
-                  {formatINR(agg.nextDueTotal)}
-                </div>
-                <div className="mt-0.5 text-sm text-ink-secondary">
-                  {fmtDateLong(agg.nextDueDate)} ·{' '}
-                  <span className="text-ink-primary">{formatRelative(agg.nextDueDate, todayIso)}</span> ·{' '}
-                  {agg.nextDueRows.length} tranche{agg.nextDueRows.length === 1 ? '' : 's'}
-                </div>
+              <div className="mt-1 text-[11px] text-ink-secondary">
+                {fmtDateLong(agg.nextDueDate)} ·{' '}
+                <span className="text-ink-primary">{formatRelative(agg.nextDueDate, todayIso)}</span> ·{' '}
+                {agg.nextDueRows.length} tranche{agg.nextDueRows.length === 1 ? '' : 's'}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Stat label="Interest" value={formatINRCompact(nextInterestSum)} accent="text-accent-rose" />
-              <Stat
-                label="Principal"
-                value={formatINRCompact(nextPrincipalSum)}
-                accent="text-accent-emerald"
-              />
+              <BannerCell label="Interest" value={formatINRCompact(nextInterestSum)} accent="text-vermillion" />
+              <BannerCell label="Principal" value={formatINRCompact(nextPrincipalSum)} accent="text-sage" />
               {agg.nextDueRows.map((row) => (
-                <Stat
+                <BannerCell
                   key={row.disbursement.applicationNumber}
                   label={row.disbursement.shortName}
                   value={formatINR(row.payment.paymentDue)}
-                  dot={
-                    row.disbursement.color === 'violet'
-                      ? 'bg-accent-violet'
-                      : row.disbursement.color === 'cyan'
-                        ? 'bg-accent-cyan'
-                        : row.disbursement.color === 'emerald'
-                          ? 'bg-accent-emerald'
-                          : 'bg-accent-pink'
-                  }
+                  dot={TRANCHE_VAR[row.disbursement.color]}
                 />
               ))}
             </div>
           </div>
-        </GlassCard>
+        </Plate>
       )}
 
       {groupBy === 'date' ? (
-        <GlassCard pad="lg">
+        <Plate pad="lg">
           <SectionTitle
-            eyebrow="Monthly groups"
+            fig="01"
+            eyebrow="Monthly folios"
             title="Combined cashflow by month"
-            description="Expand a month to see every payment due in that window across tranches."
-            right={
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-tertiary">
-                <Filter size={12} /> {filtered.length} payments
-              </div>
-            }
+            description="Expand a month to see every entry due in that window across tranches."
+            right={<div className="etch">{filtered.length} entries</div>}
           />
           <div className="space-y-2">
             {byMonth.map(([month, rows]) => {
@@ -180,47 +135,52 @@ const Schedule = () => {
               const isCurrent = month === todayMonth
               const open = openDate === month
               return (
-                <div key={month} className="overflow-hidden rounded-xl border border-white/[0.05]">
+                <div key={month} className="overflow-hidden border border-line">
                   <button
                     onClick={() => setOpenDate(open ? null : month)}
                     className={clsx(
-                      'flex w-full items-center gap-4 px-4 py-3 text-left transition',
-                      isCurrent ? 'bg-accent-emerald/[0.04]' : 'bg-bg-elevated/30 hover:bg-white/[0.02]',
+                      'flex w-full items-center gap-4 px-4 py-3 text-left transition-colors',
+                      isCurrent ? 'bg-gold/[0.06]' : 'bg-bg-base hover:bg-ink-primary/[0.025]',
                     )}
                   >
-                    {open ? (
-                      <ChevronDown size={14} className="text-ink-tertiary" />
-                    ) : (
-                      <ChevronRight size={14} className="text-ink-tertiary" />
-                    )}
-                    <div className="w-32">
-                      <div className="text-[11px] uppercase tracking-[0.12em] text-ink-tertiary">
-                        {past ? 'paid' : isCurrent ? 'this month' : 'scheduled'}
+                    <ChevronRight
+                      size={16}
+                      className={clsx('shrink-0 text-ink-muted transition-transform', open && 'rotate-90')}
+                    />
+                    <div className="w-32 shrink-0">
+                      <div className="text-[9px] uppercase tracking-[0.16em] text-ink-tertiary">
+                        {past ? 'settled' : isCurrent ? 'this month' : 'scheduled'}
                       </div>
-                      <div className="font-medium">
+                      <div className="mt-0.5 text-[13px] font-semibold tracking-wide">
                         {fmtDate(`${month}-01`, 'MMM yyyy')}
                       </div>
                     </div>
-                    {/* Mobile keeps only the Due summary inline (Interest/
-                        Principal hide below sm so the row doesn't wrap into 4
-                        lines). The full breakdown is one tap away once the
-                        month expands. */}
-                    <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                    {/* Mobile keeps only the Due summary inline; the full
+                        breakdown is one tap away once the month expands. */}
+                    <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-1 text-[12px]">
                       <div>
-                        <span className="text-ink-tertiary">Due: </span>
+                        <span className="text-ink-tertiary">due </span>
                         <span className="font-semibold tabular">{formatINR(sumDue)}</span>
                       </div>
                       <div className="hidden sm:block">
-                        <span className="text-ink-tertiary">Interest: </span>
-                        <span className="text-accent-rose tabular">{formatINR(sumInt)}</span>
+                        <span className="text-ink-tertiary">int </span>
+                        <span className="tabular text-vermillion">{formatINR(sumInt)}</span>
                       </div>
                       <div className="hidden sm:block">
-                        <span className="text-ink-tertiary">Principal: </span>
-                        <span className="text-accent-emerald tabular">
-                          {formatINR(sumPrin)}
-                        </span>
+                        <span className="text-ink-tertiary">prin </span>
+                        <span className="tabular text-sage">{formatINR(sumPrin)}</span>
                       </div>
-                      <div className="ml-auto flex items-center gap-2">
+                      <div className="ml-auto flex items-center gap-3">
+                        {past && (
+                          <Stamp tone="sage" className="hidden !text-[8px] sm:inline-block">
+                            settled
+                          </Stamp>
+                        )}
+                        {isCurrent && (
+                          <Stamp tone="vermillion" className="hidden !text-[8px] sm:inline-block">
+                            current
+                          </Stamp>
+                        )}
                         <TrancheChips activeRows={rows} />
                       </div>
                     </div>
@@ -234,65 +194,54 @@ const Schedule = () => {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden border-t border-white/[0.05]"
+                        className="overflow-hidden border-t border-line"
                       >
-                       <div className="overflow-x-auto">
-                        <div className="min-w-[680px]">
-                        <div className="grid grid-cols-[80px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] gap-3 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
-                          <div>Tranche</div>
-                          <div>Date</div>
-                          <div className="text-right">Due</div>
-                          <div className="text-right">Interest</div>
-                          <div className="text-right">Principal</div>
-                          <div className="text-right">Outstanding</div>
-                        </div>
-                        {rows.map((x, i) => (
-                          <motion.div
-                            key={x.d.applicationNumber + x.r.srNo}
-                            initial={{ opacity: 0, y: -3 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.18, delay: i * 0.02 }}
-                            className="grid grid-cols-[80px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] items-center gap-3 px-4 py-2 text-sm border-t border-white/[0.03]"
-                          >
-                            <div>
-                              <span
-                                className={clsx(
-                                  'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
-                                  x.d.color === 'violet' &&
-                                    'border-accent-violet/30 bg-accent-violet/10 text-accent-violet',
-                                  x.d.color === 'cyan' &&
-                                    'border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan',
-                                  x.d.color === 'emerald' &&
-                                    'border-accent-emerald/30 bg-accent-emerald/10 text-accent-emerald',
-                                  x.d.color === 'pink' &&
-                                    'border-accent-pink/30 bg-accent-pink/10 text-accent-pink',
-                                )}
+                        <div className="overflow-x-auto">
+                          <div className="min-w-[680px]">
+                            <div className="grid grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                              <div>Tranche</div>
+                              <div>Date</div>
+                              <div className="text-right">Due</div>
+                              <div className="text-right">Interest</div>
+                              <div className="text-right">Principal</div>
+                              <div className="text-right">Outstanding</div>
+                            </div>
+                            {rows.map((x, i) => (
+                              <motion.div
+                                key={x.d.applicationNumber + x.r.srNo}
+                                initial={{ opacity: 0, y: -3 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.18, delay: i * 0.02 }}
+                                className="grid grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] items-center gap-3 border-t border-line px-4 py-2 text-[12px]"
                               >
-                                {x.d.shortName}
-                              </span>
-                            </div>
-                            <div>
-                              <div>{fmtDate(x.r.dueDate)}</div>
-                              <div className="text-[10px] text-ink-tertiary">
-                                #{x.r.srNo} · {formatPercent(x.r.rateAtPayment, 2)}
-                              </div>
-                            </div>
-                            <div className="text-right font-medium tabular">
-                              {formatINR(x.r.paymentDue)}
-                            </div>
-                            <div className="text-right tabular text-accent-rose">
-                              {formatINR(x.r.interest)}
-                            </div>
-                            <div className="text-right tabular text-accent-emerald">
-                              {formatINR(x.r.principal)}
-                            </div>
-                            <div className="text-right font-semibold tabular">
-                              {formatINRCompact(x.r.totalOutstanding)}
-                            </div>
-                          </motion.div>
-                        ))}
+                                <div>
+                                  <span
+                                    className="inline-flex items-center gap-1.5 border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em]"
+                                    style={{
+                                      color: TRANCHE_VAR[x.d.color],
+                                      borderColor: 'var(--line)',
+                                    }}
+                                  >
+                                    <InkSwatch color={TRANCHE_VAR[x.d.color]} className="!h-1.5 !w-1.5" />
+                                    {x.d.shortName.replace('Tranche ', 'T')}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="tabular">{fmtDate(x.r.dueDate)}</div>
+                                  <div className="text-[9px] tracking-[0.08em] text-ink-muted">
+                                    № {x.r.srNo} · {formatPercent(x.r.rateAtPayment, 2)}
+                                  </div>
+                                </div>
+                                <div className="text-right font-semibold tabular">{formatINR(x.r.paymentDue)}</div>
+                                <div className="text-right tabular text-vermillion">{formatINR(x.r.interest)}</div>
+                                <div className="text-right tabular text-sage">{formatINR(x.r.principal)}</div>
+                                <div className="text-right font-semibold tabular">
+                                  {formatINRCompact(x.r.totalOutstanding)}
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
                         </div>
-                       </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -300,7 +249,7 @@ const Schedule = () => {
               )
             })}
           </div>
-        </GlassCard>
+        </Plate>
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {DISBURSEMENTS.map((d) => {
@@ -309,62 +258,60 @@ const Schedule = () => {
             const sumInt = rows.reduce((s, x) => s + x.r.interest, 0)
             const sumPrin = rows.reduce((s, x) => s + x.r.principal, 0)
             return (
-              <GlassCard key={d.applicationNumber} pad="lg" tone={d.color}>
-                <div className="mb-3 flex items-center justify-between">
+              <Plate key={d.applicationNumber} pad="lg" tone={d.color}>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <Pill tone={d.color}>{d.shortName}</Pill>
-                    <div className="mt-1 font-mono text-sm text-ink-secondary">
-                      {d.applicationNumber}
+                    <Tag tone={d.color}>{d.shortName}</Tag>
+                    <div className="mt-1.5 text-[11px] tracking-[0.06em] text-ink-secondary">
+                      № {d.applicationNumber}
                     </div>
                   </div>
-                  <div className="text-right text-xs text-ink-tertiary">
-                    {rows.length} payments · {formatINRCompact(sumDue)} total ·{' '}
+                  <div className="text-right text-[10px] leading-relaxed text-ink-tertiary">
+                    {rows.length} entries · {formatINRCompact(sumDue)} total ·{' '}
                     {formatINRCompact(sumInt)} interest ·{' '}
-                    {sumPrin > 0 ? formatINRCompact(sumPrin) : 'no principal'}
+                    {sumPrin > 0 ? `${formatINRCompact(sumPrin)} principal` : 'no principal'}
                   </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto border border-line">
                   <div className="min-w-[640px]">
-                    <div className="grid grid-cols-[60px_120px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] gap-3 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
-                      <div>#</div>
+                    <div className="grid grid-cols-[56px_120px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] gap-3 border-b border-line-strong bg-bg-base px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
+                      <div>№</div>
                       <div>Date</div>
                       <div className="text-right">Due</div>
                       <div className="text-right">Interest</div>
                       <div className="text-right">Principal</div>
                       <div className="text-right">Outstanding</div>
                     </div>
-                    <div className="max-h-[420px] overflow-y-auto divide-y divide-white/[0.03]">
+                    <div className="max-h-[420px] divide-y divide-line overflow-y-auto">
                       {rows.slice(0, 100).map((x) => (
                         <div
                           key={x.r.srNo}
                           className={clsx(
-                            'grid grid-cols-[60px_120px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] items-center gap-3 px-4 py-2 text-sm',
-                            x.r.dueDate <= todayIso ? 'text-ink-secondary' : 'text-ink-primary',
+                            'grid grid-cols-[56px_120px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_140px] items-center gap-3 px-4 py-2 text-[12px]',
+                            x.r.dueDate <= todayIso ? 'text-ink-tertiary' : 'text-ink-primary',
                           )}
                         >
-                          <div className="font-mono text-[11px] text-ink-tertiary">{x.r.srNo}</div>
-                          <div>{fmtDate(x.r.dueDate)}</div>
+                          <div className="text-[10px] tabular text-ink-muted">
+                            {String(x.r.srNo).padStart(3, '0')}
+                          </div>
+                          <div className="tabular">{fmtDate(x.r.dueDate)}</div>
                           <div className="text-right tabular">{formatINR(x.r.paymentDue)}</div>
-                          <div className="text-right tabular text-accent-rose">
-                            {formatINR(x.r.interest)}
-                          </div>
-                          <div className="text-right tabular text-accent-emerald">
-                            {formatINR(x.r.principal)}
-                          </div>
+                          <div className="text-right tabular text-vermillion">{formatINR(x.r.interest)}</div>
+                          <div className="text-right tabular text-sage">{formatINR(x.r.principal)}</div>
                           <div className="text-right font-semibold tabular">
                             {formatINRCompact(x.r.totalOutstanding)}
                           </div>
                         </div>
                       ))}
                       {rows.length > 100 && (
-                        <div className="px-4 py-3 text-center text-xs text-ink-tertiary">
-                          Showing first 100 of {rows.length}. Open the tranche page for full schedule.
+                        <div className="px-4 py-3 text-center text-[11px] text-ink-tertiary">
+                          First 100 of {rows.length}. Open the tranche file for the full ledger.
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </GlassCard>
+              </Plate>
             )
           })}
         </div>
@@ -376,9 +323,9 @@ const Schedule = () => {
 const TrancheChips = ({ activeRows }: { activeRows: Row[] }) => {
   const activeIds = new Set(activeRows.map((r) => r.d.applicationNumber))
   return (
-    <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.12em] text-ink-tertiary">
+    <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.14em] text-ink-tertiary">
       <span className="font-medium tabular text-ink-secondary">
-        {activeIds.size}/{DISBURSEMENTS.length} active
+        {activeIds.size}/{DISBURSEMENTS.length}
       </span>
       <div className="flex items-center gap-1.5">
         {DISBURSEMENTS.map((d) => {
@@ -387,18 +334,8 @@ const TrancheChips = ({ activeRows }: { activeRows: Row[] }) => {
             <span
               key={d.applicationNumber}
               title={`${d.shortName} (${d.applicationNumber})${active ? ' · active' : ' · not yet disbursed'}`}
-              className={clsx(
-                'h-2 w-2 rounded-full ring-1 transition',
-                active
-                  ? d.color === 'violet'
-                    ? 'bg-accent-violet ring-accent-violet/40'
-                    : d.color === 'cyan'
-                      ? 'bg-accent-cyan ring-accent-cyan/40'
-                      : d.color === 'emerald'
-                        ? 'bg-accent-emerald ring-accent-emerald/40'
-                        : 'bg-accent-pink ring-accent-pink/40'
-                  : 'bg-white/[0.06] ring-white/[0.08]',
-              )}
+              className="h-2 w-2 border border-line"
+              style={active ? { background: TRANCHE_VAR[d.color], borderColor: 'transparent' } : undefined}
             />
           )
         })}
@@ -407,7 +344,7 @@ const TrancheChips = ({ activeRows }: { activeRows: Row[] }) => {
   )
 }
 
-const Stat = ({
+const BannerCell = ({
   label,
   value,
   accent,
@@ -418,11 +355,13 @@ const Stat = ({
   accent?: string
   dot?: string
 }) => (
-  <div className="flex min-w-[112px] items-center gap-3 rounded-xl border border-white/[0.06] bg-bg-elevated/50 px-3 py-2">
-    {dot && <span className={clsx('h-1.5 w-1.5 rounded-full', dot)} />}
+  <div className="flex min-w-[112px] items-center gap-3 border border-line bg-bg-base px-3 py-2">
+    {dot && <InkSwatch color={dot} className="!h-1.5 !w-1.5" />}
     <div>
-      <div className="text-[10px] uppercase tracking-[0.12em] text-ink-tertiary">{label}</div>
-      <div className={clsx('mt-0.5 font-semibold tabular', accent ?? 'text-ink-primary')}>{value}</div>
+      <div className="text-[8px] uppercase tracking-[0.18em] text-ink-tertiary">{label}</div>
+      <div className={clsx('mt-0.5 text-[12px] font-semibold tabular', accent ?? 'text-ink-primary')}>
+        {value}
+      </div>
     </div>
   </div>
 )

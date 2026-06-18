@@ -126,7 +126,7 @@ export const computeAggregate = (todayIso: string): AggregateStatus => {
       }
     }
   }
-  // Interest accrued (unpaid, riding on outstanding) = charged − cash-paid
+  // Interest accrued (unpaid, riding on outstanding) = charged - cash-paid
   const totalInterestAccrued = Math.max(0, totalInterestCharged - totalInterestPaid)
 
   // Compute combined next due across all tranches sharing the earliest upcoming date

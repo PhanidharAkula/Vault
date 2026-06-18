@@ -1,11 +1,16 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Run on every push to main…
+  # Run on every push to main.
   push:
     branches: [main]
-  # …or whenever you trigger it manually from the Actions tab.
+  # Or whenever you trigger it manually from the Actions tab.
   workflow_dispatch:
+  # Daily, so the social card's "live outstanding" tracks the loan's daily
+  # rollover. 19:30 UTC = 01:00 IST (safely after midnight, allowing for the
+  # usual GitHub cron delay). Change the time/zone to match your own.
+  schedule:
+    - cron: '30 19 * * *'
 
 # Pages deployment requires these specific permissions.
 permissions:
@@ -33,6 +38,17 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Recompute today's outstanding and re-render public/og.png so the social
+      # card stays current. Uses the runner's pre-installed Chrome. TZ sets the
+      # day boundary (the loan's home zone); change it to match your own.
+      - name: Generate social card
+        env:
+          TZ: Asia/Kolkata
+        run: |
+          export CHROME_PATH="$(which google-chrome || which google-chrome-stable || which chromium-browser || true)"
+          echo "Chrome: ${CHROME_PATH:-not found, falling back to default paths}"
+          npm run og
 
       - name: Build
         run: npm run build

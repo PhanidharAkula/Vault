@@ -1,95 +1,47 @@
-# Vault - Loan Intelligence Dashboard
+# Vault
 
-A glassmorphic, animated dashboard for tracking a multi-tranche education
-loan end-to-end: live outstanding, rate-revision history, full amortization
-schedule, payment breakdowns, and analytics.
+A private loan ledger styled as an engraved banking instrument: part bond
+certificate, part terminal, part Swiss measuring instrument. It tracks a
+multi-tranche education loan end to end: live outstanding, rate-revision
+history, a full amortization schedule, payment breakdowns, and analytics.
 
-Built with **Vite + React 19 + TypeScript + Tailwind 3 + Framer Motion +
-Recharts**.
+Built with React, TypeScript, Tailwind, Framer Motion, and Recharts.
+
+## The design language
+
+Two registers of the same instrument:
+
+- **Night desk** (dark, default): bone-black desk, brass, vermillion, lamplight ink
+- **Day ledger** (light): aged paper, iron-gall ink, the ruled margin line
+
+Signature pieces:
+
+- **The odometer**: outstanding balance as mechanical rolling digit wheels,
+  ticking every second with real intra-day accrual (the paise wheels never stop)
+- **The tape**: the entire term as one graduated measuring strip with
+  disbursement diamonds, rate-revision ticks, the EMI pennant, and today's needle
+- **Needle gauges**: 240° graduated dials with counterweighted needles
+- **Split-flap countdown**: rolling wheels with a flap hinge, to the next due date
+- **The escapement**: a 60-graduation seconds dial; interest never sleeps
+- **Rubber stamps**: months print SETTLED or CURRENT as they pass
+- **Plates and registration ticks**: every module sits on a flat engraved panel
+  with corner marks, figure headers, and hairline measurement rules
+- **Guilloche rosettes**: banknote ornaments, one revolution every 90 seconds
+
+Typography pairs **Fraunces** (a serif, for ceremonial numerals and titles)
+with **Spline Sans Mono** (the voice of the machine). Tranche inks are gold,
+cerulean, sage, and plum, with vermillion for debits and sage for credits, all
+theme-aware.
 
 ## Features
 
-- **6 pages** - Overview, Disbursements, Schedule, Rates, Live, Analytics
-- **Light + dark mode** with persistent preference (light is default)
-- **Daily rollover** anchored to America/New_York midnight (auto handles
-  EDT ↔ EST)
-- **Responsive** - slide-out drawer + scaled hero/ring on mobile, untouched
-  desktop layout at ≥ 768px
-- **Live computation** - outstanding, accrued interest, next-due totals,
-  countdown timers all derived from the schedule against the current date
-- **Animated entrances** - count-up numbers, draw-on-mount progress arcs,
-  staggered list reveals
-- **Indian numbering** with `₹` formatting (lakhs / crores)
-
-## Stack
-
-```
-Vite 8         React 19         TypeScript 6
-Tailwind 3     Framer Motion    Recharts 3
-date-fns       lucide-react     clsx
-```
-
-## Local development
-
-```bash
-npm install
-npm run dev      # http://127.0.0.1:5173
-```
-
-## Build & preview
-
-```bash
-npm run build    # type-check + bundle to ./dist
-npm run preview  # serve the production build locally
-```
-
-## Project layout
-
-```
-src/
-  App.tsx                  # router + theme/today providers + drawer
-  main.tsx                 # Vite entry
-  pages/                   # Overview, Disbursements, Schedule, Rates, Live, Analytics
-  components/              # Sidebar, LiveOutstandingHero, charts/, ui/
-  state/                   # ThemeProvider, TodayProvider (split into useTodayIso/useNow)
-  lib/                     # calculations, dates, format, timezone, useChartTick
-  data/
-    loanData.generated.ts  # auto-generated payment schedule (487 rows)
-    loanData.ts            # typed wrapper + display helpers
-  index.css                # theme tokens, glass classes, recharts overrides
-
-public/
-  .nojekyll                # tells GitHub Pages to skip Jekyll processing
-  favicon.svg
-  icons.svg
-
-scripts/
-  parse-data.mjs           # regenerates loanData.generated.ts from loan_details.txt
-```
-
-## Deploying to GitHub Pages
-
-A workflow at `.github/workflows/deploy.yml` builds and publishes the site
-on every push to `main`.
-
-1. Push the repo to GitHub (private repo works on the Student / Pro plan).
-2. **Settings → Pages → Source → GitHub Actions**.
-3. Push to `main` (or click *Run workflow* in the Actions tab) - the site
-   deploys automatically.
-
-`vite.config.ts` sets `base: './'` so the build works at any sub-path
-(`https://<user>.github.io/<repo>/`).
-
-## Updating the loan data
-
-The dashboard reads from `src/data/loanData.generated.ts`. To regenerate it
-from a fresh `loan_details.txt`, place the source file alongside the
-project root and run:
-
-```bash
-node scripts/parse-data.mjs
-```
-
-The script's `SRC` path is configured in
-[`scripts/parse-data.mjs`](./scripts/parse-data.mjs) - adjust it if your
-source file lives elsewhere.
+- **Six plates**: Overview, Disbursements, Schedule, Rate registry, Live desk, and Analytics
+- **Night and day themes** with a persistent preference (night is the default)
+- **INR / USD toggle** backed by a live FX rate, while every calculation stays in INR
+- **Daily rollover** anchored to local midnight, so the ledger turns itself
+- **Live computation**: outstanding balance, accrued interest, next-due totals,
+  per-second accrual, and countdown timers, all derived from the schedule
+- **Real-time view**: a per-second meter, per-tranche accrual engines, and a
+  combined countdown to the next payment
+- **Responsive**: a slide-out index drawer on mobile, a permanent rail on desktop
+- **Indian numbering** with rupee formatting in lakhs and crores

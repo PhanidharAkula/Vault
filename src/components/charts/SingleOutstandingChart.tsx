@@ -14,14 +14,10 @@ import {
 import { fmtDateShort, fmtDateLong } from '../../lib/dates'
 import { formatINR, formatINRCompact, formatPercent } from '../../lib/format'
 import type { DisbursementView } from '../../data/loanData'
+import { TRANCHE_VAR } from '../../data/loanData'
 import { useChartTick } from '../../lib/useChartTick'
 
-const TONE: Record<string, { stroke: string; gradId: string; gradFrom: string; gradTo: string }> = {
-  violet: { stroke: '#a78bfa', gradId: 'soV', gradFrom: '#a78bfa', gradTo: '#a78bfa' },
-  cyan: { stroke: '#22d3ee', gradId: 'soC', gradFrom: '#22d3ee', gradTo: '#22d3ee' },
-  emerald: { stroke: '#34d399', gradId: 'soE', gradFrom: '#34d399', gradTo: '#34d399' },
-  pink: { stroke: '#f472b6', gradId: 'soP', gradFrom: '#f472b6', gradTo: '#f472b6' },
-}
+const TODAY_INK = 'rgb(var(--c-vermillion))'
 
 export const SingleOutstandingChart = ({
   disbursement,
@@ -53,7 +49,7 @@ export const SingleOutstandingChart = ({
     ],
     [disbursement],
   )
-  const t = TONE[disbursement.color]
+  const ink = TRANCHE_VAR[disbursement.color]
 
   const todayPoint = data.find((d) => d.date >= todayIso)
 
@@ -61,43 +57,37 @@ export const SingleOutstandingChart = ({
   const peakPoint = data[peakIndex]
 
   return (
-    // Mobile gets a shorter chart (210px) so it doesn't look vertically stretched
-    // at narrow widths. From sm: upwards we honour the `height` prop.
+    // Mobile gets a shorter chart (210px); from sm: upwards honour `height`.
     <div className="h-[210px] sm:h-[var(--chart-h,280px)]" style={{ ['--chart-h' as string]: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id={t.gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor={t.gradFrom} stopOpacity={0.55} />
-              <stop offset="1" stopColor={t.gradTo} stopOpacity={0} />
+            <linearGradient id={`so-${disbursement.color}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor={ink} stopOpacity={0.45} />
+              <stop offset="1" stopColor={ink} stopOpacity={0.03} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tickFormatter={fmtDateShort} tick={{ fontSize: 11 }} minTickGap={50} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="date" tickFormatter={fmtDateShort} tick={{ fontSize: 10 }} minTickGap={50} />
           <YAxis
             tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 10 }}
             width={64}
-            /* Pad the top of the scale by ~15% so the peak of the area
-               doesn't sit flush against the chart's top edge - there's a
-               tick mark above the data's max for breathing room. */
             domain={[0, (max: number) => max * 1.15]}
           />
-          <Tooltip content={<TT />} cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeDasharray: '4 4' }} />
+          <Tooltip content={<TT />} cursor={{ stroke: 'var(--chart-axis)', strokeDasharray: '3 3' }} />
 
           {/* Rate change verticals */}
-          <Customized
-            component={(p: any) => <RateLines disbursement={disbursement} {...p} />}
-          />
+          <Customized component={(p: any) => <RateLines disbursement={disbursement} {...p} />} />
 
-          <ReferenceLine x={todayPoint?.date} stroke="#f0abfc" strokeDasharray="3 3" />
+          <ReferenceLine x={todayPoint?.date} stroke={TODAY_INK} strokeDasharray="3 3" />
           {todayPoint && (
             <ReferenceDot
               x={todayPoint.date}
               y={todayPoint.outstanding}
               r={4}
-              fill="#f0abfc"
-              stroke="#0d0f17"
+              fill={TODAY_INK}
+              stroke="rgb(var(--bg-surface))"
               strokeWidth={2}
             />
           )}
@@ -107,17 +97,17 @@ export const SingleOutstandingChart = ({
             x={peakPoint.date}
             y={peakPoint.outstanding}
             r={4}
-            fill="#fbbf24"
-            stroke="#0d0f17"
+            fill="rgb(var(--c-gold))"
+            stroke="rgb(var(--bg-surface))"
             strokeWidth={2}
           />
 
           <Area
             type="monotone"
             dataKey="outstanding"
-            stroke={t.stroke}
-            strokeWidth={2}
-            fill={`url(#${t.gradId})`}
+            stroke={ink}
+            strokeWidth={1.8}
+            fill={`url(#so-${disbursement.color})`}
             isAnimationActive
             animationDuration={900}
             animationEasing="ease-out"
@@ -132,13 +122,13 @@ const TT = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null
   const p = payload[0].payload
   return (
-    <div className="rounded-xl border border-white/10 bg-bg-elevated/95 px-3 py-2 text-xs backdrop-blur-md shadow-glow">
-      <div className="mb-1 font-semibold">{fmtDateLong(label)}</div>
+    <div className="readout">
+      <div className="etch mb-1.5 !text-[9px]">{fmtDateLong(label)}</div>
       <div className="space-y-0.5">
         <Row k="Outstanding" v={formatINR(p.outstanding)} />
         <Row k="Accrued interest" v={formatINR(p.interestAccrued)} />
         <Row k="Rate at this point" v={formatPercent(p.rate, 2)} />
-        {p.srNo > 0 && <Row k="Payment #" v={`${p.srNo}`} />}
+        {p.srNo > 0 && <Row k="Payment №" v={`${p.srNo}`} />}
       </div>
     </div>
   )
@@ -162,6 +152,8 @@ const RateLines = ({ disbursement, xAxisMap, offset }: any) => {
       {disbursement.rateChanges.map((rc: any) => {
         const x = xScale(rc.date)
         if (x == null || isNaN(x)) return null
+        const up = rc.to > rc.from
+        const color = up ? 'rgb(var(--c-vermillion))' : 'rgb(var(--c-sage))'
         return (
           <g key={rc.date}>
             <line
@@ -169,21 +161,22 @@ const RateLines = ({ disbursement, xAxisMap, offset }: any) => {
               x2={x}
               y1={top}
               y2={bottom}
-              stroke={rc.to > rc.from ? '#fb7185' : '#34d399'}
+              stroke={color}
               strokeWidth={1}
               strokeDasharray="4 4"
-              opacity={0.6}
+              opacity={0.55}
             />
             <foreignObject x={x - 28} y={top + 4} width={56} height={20}>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   textAlign: 'center',
-                  color: rc.to > rc.from ? '#fb7185' : '#34d399',
+                  color,
                   fontWeight: 600,
+                  letterSpacing: '0.04em',
                 }}
               >
-                {rc.to > rc.from ? '↑' : '↓'} {rc.to.toFixed(2)}%
+                {up ? '↑' : '↓'} {rc.to.toFixed(2)}%
               </div>
             </foreignObject>
           </g>

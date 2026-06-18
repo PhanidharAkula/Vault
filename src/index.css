@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Spline+Sans+Mono:ital,wght@0,300..700;1,300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,117 +6,113 @@
 
 @layer base {
   /* ────────────────────────────────────────────────────────────────────────
-     Theme tokens.  Stored as space-separated RGB triplets so they can be
-     consumed by Tailwind's `rgb(var(--x) / <alpha-value>)` syntax - that's
-     what makes `bg-bg-base/50` etc. still work.
+     THE NIGHT LEDGER - theme tokens.
+     Two registers of the same instrument:
+       · DAY LEDGER  (light) - aged paper, iron-gall ink, vermillion margin
+       · NIGHT DESK  (dark)  - bone-black desk, brass, lamplight ink
+     Stored as space-separated RGB triplets so Tailwind's
+     `rgb(var(--x) / <alpha-value>)` syntax works for tints.
      ──────────────────────────────────────────────────────────────────────── */
 
   :root,
   [data-theme='light'] {
-    /* surfaces */
-    --bg-base: 247 248 251;        /* #f7f8fb */
-    --bg-surface: 255 255 255;     /* #ffffff */
-    --bg-elevated: 255 255 255;    /* #ffffff */
-    --bg-border: 226 230 236;      /* #e2e6ec */
+    /* paper */
+    --bg-base: 239 233 220;      /* #efe9dc */
+    --bg-surface: 247 243 233;   /* #f7f3e9 */
+    --bg-elevated: 253 251 244;  /* #fdfbf4 */
 
     /* ink */
-    --ink-primary: 14 17 26;       /* #0e111a */
-    --ink-secondary: 76 84 99;     /* #4c5463 */
-    --ink-tertiary: 117 124 139;   /* #757c8b */
-    --ink-muted: 156 163 175;      /* #9ca3af */
+    --ink-primary: 33 27 18;     /* #211b12 */
+    --ink-secondary: 92 82 64;   /* #5c5240 */
+    --ink-tertiary: 140 129 112; /* #8c8170 */
+    --ink-muted: 179 169 146;    /* #b3a992 */
 
-    /* overlay color (for bg-white/[…] & border-white/[…] overrides below) */
-    --overlay-rgb: 14, 17, 26;
+    /* hairlines */
+    --line: rgba(33, 27, 18, 0.16);
+    --line-strong: rgba(33, 27, 18, 0.4);
 
-    /* progress ring track */
-    --ring-track: rgba(14, 17, 26, 0.10);
+    /* accent inks (deepened for paper) */
+    --c-gold: 138 106 31;        /* #8a6a1f brass */
+    --c-cerulean: 31 100 128;    /* #1f6480 */
+    --c-sage: 76 120 66;         /* #4c7842 */
+    --c-plum: 126 71 105;        /* #7e4769 */
+    --c-vermillion: 178 58 29;   /* #b23a1d */
 
-    /* glass card */
-    --glass-bg-1: rgba(255, 255, 255, 0.92);
-    --glass-bg-2: rgba(255, 255, 255, 0.65);
-    --glass-bg-base: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(14, 17, 26, 0.08);
-    --glass-border-hover: rgba(14, 17, 26, 0.16);
+    /* charts */
+    --chart-axis: rgba(33, 27, 18, 0.22);
+    --chart-grid: rgba(33, 27, 18, 0.08);
+    --chart-tick: #8c8170;
 
-    /* mesh background */
-    --mesh-opacity: 0.4;
-    --grid-line-rgb: 14, 17, 26;
-    --grid-line-alpha: 0.04;
-
-    /* recharts */
-    --chart-axis: rgba(14, 17, 26, 0.18);
-    --chart-grid: rgba(14, 17, 26, 0.07);
-    --chart-tick: #6b7280;
-
-    /* misc */
-    --select-bg: rgba(99, 102, 241, 0.18);
-    --scrollbar-thumb: rgba(14, 17, 26, 0.12);
-    --scrollbar-thumb-hover: rgba(14, 17, 26, 0.22);
+    /* page furniture */
+    --grain-opacity: 0.05;
+    --rule-alpha: 0.045;
+    --select-bg: rgba(138, 106, 31, 0.25);
 
     color-scheme: light;
   }
 
   [data-theme='dark'] {
-    /* surfaces */
-    --bg-base: 7 8 13;            /* #07080d */
-    --bg-surface: 13 15 23;       /* #0d0f17 */
-    --bg-elevated: 19 22 31;      /* #13161f */
-    --bg-border: 31 35 48;        /* #1f2330 */
+    /* desk */
+    --bg-base: 13 11 8;          /* #0d0b08 */
+    --bg-surface: 20 17 12;      /* #14110c */
+    --bg-elevated: 28 24 17;     /* #1c1811 */
 
     /* ink */
-    --ink-primary: 245 247 251;   /* #f5f7fb */
-    --ink-secondary: 155 163 180; /* #9ba3b4 */
-    --ink-tertiary: 92 100 120;   /* #5c6478 */
-    --ink-muted: 58 64 85;        /* #3a4055 */
+    --ink-primary: 234 226 206;  /* #eae2ce bone */
+    --ink-secondary: 168 158 134;/* #a89e86 */
+    --ink-tertiary: 117 109 88;  /* #756d58 */
+    --ink-muted: 74 68 56;       /* #4a4438 */
 
-    --overlay-rgb: 255, 255, 255;
+    /* hairlines */
+    --line: rgba(234, 226, 206, 0.12);
+    --line-strong: rgba(234, 226, 206, 0.36);
 
-    /* progress ring track */
-    --ring-track: rgba(255, 255, 255, 0.06);
+    /* accent inks (lifted for lamplight) */
+    --c-gold: 210 168 75;        /* #d2a84b brass */
+    --c-cerulean: 98 168 200;    /* #62a8c8 */
+    --c-sage: 151 186 116;       /* #97ba74 */
+    --c-plum: 195 135 174;       /* #c387ae */
+    --c-vermillion: 226 92 58;   /* #e25c3a */
 
-    /* glass */
-    --glass-bg-1: rgba(255, 255, 255, 0.025);
-    --glass-bg-2: rgba(255, 255, 255, 0.005);
-    --glass-bg-base: rgba(13, 15, 23, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-border-hover: rgba(255, 255, 255, 0.12);
+    /* charts */
+    --chart-axis: rgba(234, 226, 206, 0.14);
+    --chart-grid: rgba(234, 226, 206, 0.055);
+    --chart-tick: #756d58;
 
-    /* mesh */
-    --mesh-opacity: 0.9;
-    --grid-line-rgb: 255, 255, 255;
-    --grid-line-alpha: 0.025;
-
-    /* recharts */
-    --chart-axis: rgba(255, 255, 255, 0.08);
-    --chart-grid: rgba(255, 255, 255, 0.04);
-    --chart-tick: #5c6478;
-
-    /* misc */
-    --select-bg: rgba(99, 102, 241, 0.35);
-    --scrollbar-thumb: rgba(255, 255, 255, 0.06);
-    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.12);
+    /* page furniture */
+    --grain-opacity: 0.07;
+    --rule-alpha: 0.03;
+    --select-bg: rgba(210, 168, 75, 0.3);
 
     color-scheme: dark;
   }
 
   /* Use min-height so the page background paints all the way down even when
-     content is taller than the viewport.  `height: 100%` was causing the bg
-     to band at every 100vh boundary because the body box was clipped to the
-     viewport while content overflowed past it. */
+     content is taller than the viewport. */
   html, body, #root {
     min-height: 100%;
   }
   html, body {
-    /* Belt-and-braces cap so an oversized child (e.g. a Recharts SVG that
-       hasn't measured the parent yet on first paint) can never produce a
-       horizontal scroll on mobile. Local overflow-x: auto containers still
-       work because they create their own scroll context. */
+    /* Cap so an oversized child (e.g. a Recharts SVG that hasn't measured the
+       parent yet on first paint) can never produce a horizontal scroll on
+       mobile. Local overflow-x: auto containers still work. */
     max-width: 100vw;
     overflow-x: clip;
+    /* Paint the base colour on <html> too so the safe-area edges (and the
+       brief body-pin during the mobile drawer's scroll lock) never flash
+       through to a blank/over-scrolled page. */
+    background-color: rgb(var(--bg-base));
   }
   body {
-    @apply bg-bg-base text-ink-primary font-sans antialiased;
-    font-feature-settings: 'cv11', 'ss01', 'ss02';
+    @apply bg-bg-base text-ink-primary font-mono antialiased;
+    /* Faint ledger ruling across the whole desk - panels sit on top of it. */
+    background-image: repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 39px,
+      rgb(var(--ink-primary) / var(--rule-alpha)) 39px,
+      rgb(var(--ink-primary) / var(--rule-alpha)) 40px
+    );
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 200ms ease;
@@ -124,30 +120,39 @@
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
-    /* Suppress the iOS/Android tap-highlight rectangle that Safari paints on
-       any interactive element (including Recharts pie/bar paths that get
-       `cursor: pointer`). Without this, tapping a pie slice on mobile flashes
-       a grey square over just that slice. */
     -webkit-tap-highlight-color: transparent;
     cursor: default;
-    /* Prevent any rogue wide child from horizontally scrolling the whole page.
-       Local overflow-x:auto wrappers (e.g. amortization tables) still scroll
-       within their own containers. */
     overflow-x: clip;
   }
-  /* Belt-and-braces: also apply to all descendants so SVG paths (Recharts
-     slices/bars) and any deeply-nested element with its own stacking context
-     doesn't inherit the default `currentColor` highlight from the UA. */
+  /* Paper grain over everything - fixed so it doesn't scroll with content. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  /* Lamplight vignette - night desk only. */
+  [data-theme='dark'] body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(210, 168, 75, 0.05), transparent 60%),
+      radial-gradient(140% 120% at 50% 120%, rgba(0, 0, 0, 0.5), transparent 55%);
+  }
   *,
   *::before,
   *::after {
     -webkit-tap-highlight-color: transparent;
   }
   /* Safari iOS draws a focus/selection rectangle around tapped SVG paths
-     (Recharts pie slices, bar cells, line dots) because each <path>/<rect>
-     receives focus and a tap-highlight. The rules above kill the highlight
-     globally; these rules additionally suppress the focus outline and any
-     touch callout that Safari uses to single out one SVG primitive. */
+     (Recharts slices, bar cells, line dots). Suppress globally. */
   svg,
   svg * {
     -webkit-tap-highlight-color: transparent;
@@ -160,10 +165,6 @@
   svg *:focus-visible {
     outline: none;
   }
-  /* Disable the iOS Safari "magnify on tap" / text-selection gesture on
-     Recharts wrappers. Without `touch-action: manipulation`, Safari treats
-     SVG paths as text-selectable and shows a selection rectangle around the
-     tapped slice/bar. */
   .recharts-wrapper,
   .recharts-wrapper * {
     touch-action: manipulation;
@@ -182,8 +183,6 @@
   [role='button'][aria-disabled='true'] {
     cursor: not-allowed;
   }
-  /* Text inputs still need an I-beam cursor and selection so users can type,
-     edit and select within them. */
   input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']),
   textarea {
     user-select: text;
@@ -193,165 +192,147 @@
   ::selection {
     background: var(--select-bg);
   }
-  /* Hide scrollbars completely (Webkit + Firefox + legacy IE/Edge) but keep
-     scrolling functional. */
+  /* Hide scrollbars completely but keep scrolling functional. */
   ::-webkit-scrollbar { width: 0; height: 0; display: none; }
   * { scrollbar-width: none; -ms-overflow-style: none; }
 }
 
 @layer components {
-  .glass {
-    background:
-      linear-gradient(180deg, var(--glass-bg-1) 0%, var(--glass-bg-2) 100%),
-      var(--glass-bg-base);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+  /* A plate: the flat engraved panel every module sits on. Pair with
+     <Plate> (ui/Plate.tsx) which adds the corner registration ticks. */
+  .plate {
+    position: relative;
+    background-color: rgb(var(--bg-surface));
+    border: 1px solid var(--line);
   }
-  .glass-strong {
-    background:
-      linear-gradient(180deg, var(--glass-bg-1) 0%, var(--glass-bg-2) 100%),
-      var(--glass-bg-base);
-    border: 1px solid var(--glass-border-hover);
+  [data-theme='dark'] .plate {
+    box-shadow: inset 0 1px 0 rgba(234, 226, 206, 0.03);
   }
-  .glass-hover {
-    transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+  .plate-hover {
+    transition: border-color 180ms ease, transform 180ms ease;
   }
-  /* Only fire on devices that can actually hover (mice/trackpads). Touch
-     devices report `hover: none`, so tapping a card on a phone doesn't get
-     stuck in the hover state. */
   @media (hover: hover) {
-    .glass-hover:hover {
-      border-color: var(--glass-border-hover);
+    .plate-hover:hover {
+      border-color: var(--line-strong);
     }
   }
-  .gradient-text-brand {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+  /* Corner registration tick - four of these get planted by <Plate>. */
+  .ptick {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    border: 0 solid var(--line-strong);
+    transition: border-color 180ms ease;
   }
-  .gradient-text-cyan {
-    background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+  .ptick-tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+  .ptick-tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+  .ptick-bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+  .ptick-br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
+  @media (hover: hover) {
+    .plate-hover:hover .ptick { border-color: rgb(var(--c-gold)); }
   }
-  .gradient-text-emerald {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+
+  /* Engraved label: tiny, tracked-out, all caps. The voice of the machine. */
+  .etch {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgb(var(--ink-tertiary));
   }
-  /* Dark theme uses lighter gradients (more contrast on dark bg) */
-  [data-theme='dark'] .gradient-text-brand {
-    background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 50%, #f0abfc 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+
+  /* Measurement rule with end ticks - used under section titles. */
+  .rule-ticked {
+    position: relative;
+    height: 1px;
+    background: var(--line);
   }
-  [data-theme='dark'] .gradient-text-cyan {
-    background: linear-gradient(135deg, #67e8f9 0%, #818cf8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+  .rule-ticked::before,
+  .rule-ticked::after {
+    content: '';
+    position: absolute;
+    top: -2.5px;
+    width: 1px;
+    height: 6px;
+    background: var(--line-strong);
   }
-  [data-theme='dark'] .gradient-text-emerald {
-    background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+  .rule-ticked::before { left: 0; }
+  .rule-ticked::after { right: 0; }
+
+  /* Rubber stamp - rotated, double-ringed, inked. */
+  .stamp {
+    display: inline-block;
+    padding: 1px 8px 0;
+    border: 1.5px solid currentColor;
+    outline: 1px solid currentColor;
+    outline-offset: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    transform: rotate(-7deg);
+    opacity: 0.85;
   }
-  .ring-soft {
-    box-shadow: 0 0 0 1px var(--glass-border);
+  [data-theme='light'] .stamp { mix-blend-mode: multiply; }
+
+  /* Instrument readout - floating tooltips, popovers. */
+  .readout {
+    background: rgb(var(--bg-elevated) / 0.97);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
+    padding: 8px 10px;
+    font-size: 11px;
   }
+
+  /* Segmented switch - active segment prints solid ink on paper. */
+  .seg {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--line);
+    background: rgb(var(--bg-surface));
+    padding: 2px;
+    gap: 2px;
+  }
+  .seg-btn {
+    position: relative;
+    padding: 4px 10px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: rgb(var(--ink-tertiary));
+    transition: color 150ms ease;
+    white-space: nowrap;
+  }
+  @media (hover: hover) {
+    .seg-btn:hover { color: rgb(var(--ink-primary)); }
+  }
+  .seg-btn[data-on='true'] {
+    color: rgb(var(--bg-base));
+    background: rgb(var(--ink-primary));
+  }
+
   .num {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
-  .grid-bg {
-    background-image:
-      linear-gradient(rgba(var(--grid-line-rgb), var(--grid-line-alpha)) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(var(--grid-line-rgb), var(--grid-line-alpha)) 1px, transparent 1px);
-    background-size: 32px 32px;
-    background-position: -1px -1px;
-  }
 }
 
-/* ────────────────────────────────────────────────────────────────────────
-   Theme-aware overrides for the existing dark-only Tailwind utilities.
-   Many components use `bg-white/[0.04]`, `border-white/[0.06]` etc. - those
-   look right on a dark surface but become invisible on a light one.  We
-   leave the JSX untouched and just remap those classes via CSS variable
-   so they invert to a translucent dark colour in light mode.
-   ──────────────────────────────────────────────────────────────────────── */
 @layer utilities {
-  [data-theme='light'] .bg-white\/\[0\.02\] { background-color: rgba(var(--overlay-rgb), 0.025); }
-  [data-theme='light'] .bg-white\/\[0\.03\] { background-color: rgba(var(--overlay-rgb), 0.04); }
-  [data-theme='light'] .bg-white\/\[0\.04\] { background-color: rgba(var(--overlay-rgb), 0.05); }
-  [data-theme='light'] .bg-white\/\[0\.05\] { background-color: rgba(var(--overlay-rgb), 0.06); }
-  [data-theme='light'] .bg-white\/\[0\.06\] { background-color: rgba(var(--overlay-rgb), 0.07); }
-  [data-theme='light'] .bg-white\/\[0\.08\] { background-color: rgba(var(--overlay-rgb), 0.10); }
-
-  [data-theme='light'] .border-white\/\[0\.03\] { border-color: rgba(var(--overlay-rgb), 0.06); }
-  [data-theme='light'] .border-white\/\[0\.04\] { border-color: rgba(var(--overlay-rgb), 0.07); }
-  [data-theme='light'] .border-white\/\[0\.05\] { border-color: rgba(var(--overlay-rgb), 0.08); }
-  [data-theme='light'] .border-white\/\[0\.06\] { border-color: rgba(var(--overlay-rgb), 0.10); }
-  [data-theme='light'] .border-white\/\[0\.08\] { border-color: rgba(var(--overlay-rgb), 0.12); }
-  [data-theme='light'] .border-white\/\[0\.10\] { border-color: rgba(var(--overlay-rgb), 0.14); }
-  [data-theme='light'] .border-white\/\[0\.12\] { border-color: rgba(var(--overlay-rgb), 0.18); }
-  [data-theme='light'] .border-white\/10 { border-color: rgba(var(--overlay-rgb), 0.14); }
-
-  /* hover:border variants - only fire on hover-capable devices so touch taps
-     don't get stuck in the hovered state. */
-  @media (hover: hover) {
-    [data-theme='light'] .hover\:border-white\/\[0\.06\]:hover { border-color: rgba(var(--overlay-rgb), 0.12); }
-    [data-theme='light'] .hover\:border-white\/\[0\.08\]:hover { border-color: rgba(var(--overlay-rgb), 0.16); }
-    [data-theme='light'] .hover\:border-white\/\[0\.10\]:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
-    [data-theme='light'] .hover\:border-white\/\[0\.12\]:hover { border-color: rgba(var(--overlay-rgb), 0.24); }
-    [data-theme='light'] .hover\:border-white\/10:hover { border-color: rgba(var(--overlay-rgb), 0.20); }
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
-
-  [data-theme='light'] .ring-white\/5 { --tw-ring-color: rgba(var(--overlay-rgb), 0.08); }
-  [data-theme='light'] .ring-white\/10 { --tw-ring-color: rgba(var(--overlay-rgb), 0.12); }
-  [data-theme='light'] .ring-white\/\[0\.08\] { --tw-ring-color: rgba(var(--overlay-rgb), 0.10); }
-
-  /* hover variants - gated to hover-capable devices (same reason). */
-  @media (hover: hover) {
-    [data-theme='light'] .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(var(--overlay-rgb), 0.025); }
-    [data-theme='light'] .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(var(--overlay-rgb), 0.05); }
-    [data-theme='light'] .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(var(--overlay-rgb), 0.06); }
-    [data-theme='light'] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(var(--overlay-rgb), 0.07); }
+  /* Serif display numerals keep lining tabular figures where supported. */
+  .display-num {
+    font-variant-numeric: lining-nums tabular-nums;
   }
-
-  /* divide-* using white */
-  [data-theme='light'] .divide-white\/\[0\.03\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.06); }
-  [data-theme='light'] .divide-white\/\[0\.04\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.07); }
-  [data-theme='light'] .divide-white\/\[0\.05\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.08); }
-  [data-theme='light'] .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(var(--overlay-rgb), 0.10); }
-
-  /* Amber loses contrast on white - the dark-mode `#fbbf24` becomes a pale
-     wash on a light surface. Remap to amber-700 (`#b45309`) in light mode so
-     the text and pill chrome stay legible. */
-  [data-theme='light'] .text-accent-amber { color: #b45309; }
-  [data-theme='light'] .bg-accent-amber\/10 { background-color: rgba(180, 83, 9, 0.10); }
-  [data-theme='light'] .bg-accent-amber\/15 { background-color: rgba(180, 83, 9, 0.15); }
-  [data-theme='light'] .border-accent-amber\/25 { border-color: rgba(180, 83, 9, 0.30); }
-  [data-theme='light'] .border-accent-amber\/30 { border-color: rgba(180, 83, 9, 0.35); }
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   Recharts overrides - uses CSS variables so colours flip with the theme.
+   Recharts overrides - CSS variables flip the chart chrome with the theme.
    ──────────────────────────────────────────────────────────────────────── */
 .recharts-tooltip-cursor {
   stroke: var(--chart-axis) !important;
-  stroke-dasharray: 4 4 !important;
+  stroke-dasharray: 3 3 !important;
 }
 .recharts-cartesian-axis-line,
 .recharts-cartesian-axis-tick-line {
@@ -362,45 +343,86 @@
 }
 .recharts-text.recharts-cartesian-axis-tick-value {
   fill: var(--chart-tick) !important;
-  font-size: 11px !important;
+  font-size: 10px !important;
+  font-family: 'Spline Sans Mono', ui-monospace, monospace !important;
+  letter-spacing: 0.04em;
 }
 .recharts-default-legend {
-  font-size: 12px !important;
+  font-size: 11px !important;
 }
 .recharts-surface:focus {
   outline: none !important;
 }
 
-.tabular {
-  font-variant-numeric: tabular-nums;
+/* ────────────────────────────────────────────────────────────────────────
+   Motion. Mechanical timings - things settle like instruments, not jelly.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Odometer digit roll. Direction set per-digit by the component. */
+@keyframes odo-up-in {
+  from { transform: translateY(105%); }
+  to   { transform: translateY(0); }
+}
+@keyframes odo-up-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-105%); }
+}
+@keyframes odo-down-in {
+  from { transform: translateY(-105%); }
+  to   { transform: translateY(0); }
+}
+@keyframes odo-down-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(105%); }
 }
 
-/* Pulse ring - used by the Live view PulseVisualizer. */
-@keyframes pulse-ring {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.55); opacity: 0; }
+/* Clock colon / live cursor blink. */
+@keyframes blink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.15; }
 }
-.pulse-ring {
-  animation: pulse-ring 2.4s ease-in-out infinite;
+.blink { animation: blink 1s steps(1) infinite; }
+
+/* Guilloche rosette - one revolution every 90 seconds. */
+@keyframes rosette-spin {
+  to { transform: rotate(360deg); }
+}
+.rosette-spin {
+  animation: rosette-spin 90s linear infinite;
   transform-origin: center;
-  will-change: transform, opacity;
 }
 
-/* Page-section entrance - used by Live view so the top-level sections fade
-   and slide up on mount. Framer Motion's `initial` prop is suppressed by the
-   parent AnimatePresence's initial={false}, so CSS gives us a reliable
-   on-mount animation that doesn't depend on framer context. */
+/* Escapement seconds hand - 60 discrete ticks per revolution. */
+@keyframes escapement {
+  to { transform: rotate(360deg); }
+}
+.escapement-hand {
+  animation: escapement 60s steps(60) infinite;
+  transform-origin: center;
+}
+
+/* Page-section entrance - sections rise and settle on mount. CSS-driven so
+   it isn't suppressed by the page-level AnimatePresence initial={false}. */
 @keyframes section-enter {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .section-enter {
   opacity: 0;
-  animation: section-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: section-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   will-change: transform, opacity;
 }
 .section-enter-d0 { animation-delay: 0ms; }
-.section-enter-d1 { animation-delay: 120ms; }
-.section-enter-d2 { animation-delay: 240ms; }
-.section-enter-d3 { animation-delay: 360ms; }
-.section-enter-d4 { animation-delay: 480ms; }
+.section-enter-d1 { animation-delay: 90ms; }
+.section-enter-d2 { animation-delay: 180ms; }
+.section-enter-d3 { animation-delay: 270ms; }
+.section-enter-d4 { animation-delay: 360ms; }
+.section-enter-d5 { animation-delay: 450ms; }
+
+/* Stamp thunk - scales down and rotates into place like it was pressed. */
+@keyframes stamp-in {
+  0%   { opacity: 0; transform: rotate(-7deg) scale(1.6); }
+  60%  { opacity: 1; transform: rotate(-7deg) scale(0.94); }
+  100% { opacity: 0.85; transform: rotate(-7deg) scale(1); }
+}
+.stamp-in { animation: stamp-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }

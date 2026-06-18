@@ -13,7 +13,7 @@ const Ctx = createContext<ThemeCtx | null>(null)
 const STORAGE_KEY = 'vault.theme'
 
 const readInitial = (): Theme => {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined') return 'dark'
   // The bootstrap script in index.html has already written `data-theme` based on
   // (a) the `?theme=…` URL param or (b) localStorage, so reading the DOM picks
   // up whichever wins. Falling back to the storage check for SSR/edge cases.
@@ -25,7 +25,8 @@ const readInitial = (): Theme => {
   } catch {
     /* localStorage unavailable */
   }
-  return 'light'
+  // Night desk is the house default; the day ledger is one switch away.
+  return 'dark'
 }
 
 // Page-background hex per theme - kept in sync with the `--bg-base` token in
@@ -33,8 +34,8 @@ const readInitial = (): Theme => {
 // and the bottom toolbar paint with this colour instead of leaving a
 // translucent overlay across the safe-area edges.
 const THEME_COLOR: Record<Theme, string> = {
-  light: '#f7f8fb',
-  dark: '#07080d',
+  light: '#efe9dc',
+  dark: '#0d0b08',
 }
 
 const apply = (theme: Theme) => {

@@ -1,32 +1,56 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  LayoutDashboard,
-  Wallet,
-  CalendarDays,
-  Percent,
-  Activity,
-  BarChart3,
-  Moon,
-  Sun,
-} from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import clsx from 'clsx'
-import { DISBURSEMENTS, MASTER } from '../data/loanData'
-import { fmtDateLong } from '../lib/dates'
+import { MASTER } from '../data/loanData'
+import { fmtDate } from '../lib/dates'
 import { clockString, zoneShortName } from '../lib/timezone'
 import { useNow, useTodayIso } from '../state/today'
 import { useTheme } from '../state/theme'
 import { useCurrency } from '../state/currency'
+import { Guilloche } from './ui/decor'
 
 export type RouteKey = 'overview' | 'disbursements' | 'schedule' | 'rates' | 'live' | 'analytics'
 
-const ITEMS: { key: RouteKey; label: string; icon: React.ComponentType<{ className?: string; size?: number }>; hint: string }[] = [
-  { key: 'overview', label: 'Overview', icon: LayoutDashboard, hint: 'Snapshot' },
-  { key: 'disbursements', label: 'Disbursements', icon: Wallet, hint: `${DISBURSEMENTS.length} tranches` },
-  { key: 'schedule', label: 'Schedule', icon: CalendarDays, hint: 'Amortization' },
-  { key: 'rates', label: 'Rate History', icon: Percent, hint: 'Interest moves' },
-  { key: 'live', label: 'Live View', icon: Activity, hint: 'Real-time' },
-  { key: 'analytics', label: 'Analytics', icon: BarChart3, hint: 'Insights' },
+const ITEMS: { key: RouteKey; label: string; hint: string }[] = [
+  { key: 'overview', label: 'Overview', hint: 'master' },
+  { key: 'disbursements', label: 'Disbursements', hint: `tranches` },
+  { key: 'schedule', label: 'Schedule', hint: 'amortization' },
+  { key: 'rates', label: 'Rate registry', hint: 'revisions' },
+  { key: 'live', label: 'Live desk', hint: 'realtime' },
+  { key: 'analytics', label: 'Analytics', hint: 'composition' },
 ]
+
+// True at md+ where the rail is permanent. Used to pick the active-link
+// animation: a shared-layout slide on desktop, a plain fade on mobile (where
+// the drawer's body-pin scroll-lock would make a layout slide fly in from the
+// bottom). Updates on resize so rotating a phone to landscape switches modes.
+const useIsDesktop = (): boolean => {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const onChange = () => setIsDesktop(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
+}
+
+// The active-nav highlight. On desktop it carries `layoutId` so it slides
+// between items; on mobile it just fades in (no viewport-position projection,
+// so the drawer's scroll-lock can't fling it across the screen).
+const ActiveHighlight = ({ slide }: { slide: boolean }) => (
+  <motion.div
+    {...(slide
+      ? { layoutId: 'navActive', transition: { type: 'spring', stiffness: 420, damping: 34 } }
+      : { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.15 } })}
+    className="absolute inset-0 border border-line bg-bg-elevated"
+  >
+    <span className="absolute bottom-0 left-0 top-0 w-[2px] bg-vermillion" />
+  </motion.div>
+)
 
 const Sidebar = ({
   route,
@@ -35,41 +59,45 @@ const Sidebar = ({
 }: {
   route: RouteKey
   onNavigate: (k: RouteKey) => void
-  /** Drawer state for mobile (`< md`). Ignored on `md+` where the sidebar is permanent. */
+  /** Drawer state for mobile (`< md`). Ignored on `md+` where the rail is permanent. */
   drawerOpen?: boolean
   /** Reserved - drawer is closed by route changes (handled in App.tsx) and by tapping the backdrop. */
   onCloseDrawer?: () => void
 }) => {
+  const isDesktop = useIsDesktop()
   return (
     <aside
       className={clsx(
-        'fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/[0.05] bg-bg-surface/95 backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:bg-bg-surface/60 md:translate-x-0',
-        drawerOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0',
+        // `h-screen` (a fixed 100vh) keeps the rail height scroll-independent -
+        // `100dvh` shifts as Safari's address bar hides/shows while scrolling,
+        // which reflowed the nav and made the active-link highlight animate in
+        // from offscreen when the drawer was opened mid-scroll. The page scroll
+        // is frozen by the body lock in App.tsx, so the safe areas stay covered.
+        'fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-line bg-bg-surface transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:translate-x-0',
+        drawerOpen ? 'translate-x-0 shadow-drawer' : '-translate-x-full md:translate-x-0',
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-6 pt-6">
-        <div className="relative h-9 w-9 overflow-hidden rounded-xl ring-soft">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-400 via-accent-violet to-accent-cyan" />
-          <div className="absolute inset-0 grid place-items-center text-bg-base">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-              <path d="M4 16l5-7 5 4 6-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="20" cy="4" r="1.6" fill="currentColor" />
-            </svg>
-          </div>
+      {/* Wordmark - top padding clears the status bar / dynamic island, while
+          the rail's surface still extends to the very top edge behind it. */}
+      <div className="relative overflow-hidden border-b border-line px-6 pb-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-10 opacity-60"
+        >
+          <Guilloche size={120} petals={14} opacity={0.4} />
         </div>
-        <div>
-          <div className="font-display text-lg font-semibold tracking-tight">Vault</div>
-          <div className="-mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-ink-tertiary">
-            Loan Intelligence
+        <div className="relative">
+          <div className="font-display text-[28px] font-medium italic leading-none tracking-tight text-ink-primary">
+            Vault<span className="text-vermillion">.</span>
           </div>
+          <div className="etch mt-2">Private loan ledger</div>
         </div>
       </div>
 
-      {/* Account chip */}
-      <div className="mx-4 mt-6 rounded-2xl border border-white/[0.06] bg-bg-elevated/50 p-3">
+      {/* Account plate */}
+      <div className="border-b border-line px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500/30 to-accent-violet/30 text-sm font-semibold ring-1 ring-white/10">
+          <div className="grid h-9 w-9 shrink-0 place-items-center border border-line-strong font-display text-sm font-medium text-gold">
             {MASTER.applicantName
               .split(' ')
               .map((s) => s[0])
@@ -77,44 +105,41 @@ const Sidebar = ({
               .join('')}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium">{MASTER.applicantName}</div>
-            <div className="truncate font-mono text-[10px] text-ink-tertiary">
-              {MASTER.applicationNumber}
+            <div className="truncate text-xs font-semibold tracking-wide text-ink-primary">
+              {MASTER.applicantName}
+            </div>
+            <div className="mt-0.5 truncate text-[10px] tracking-[0.08em] text-ink-tertiary">
+              № {MASTER.applicationNumber}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="mt-6 flex-1 px-3">
-        {ITEMS.map((item) => {
-          const Icon = item.icon
+      {/* Index */}
+      <nav className="mt-4 flex-1 px-3">
+        <div className="etch px-3 pb-2">Index</div>
+        {ITEMS.map((item, i) => {
           const active = route === item.key
           return (
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}
               className={clsx(
-                'group relative my-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition',
+                'group relative my-px flex w-full items-center gap-3 px-3 py-2.5 text-left text-[13px] transition-colors',
                 active ? 'text-ink-primary' : 'text-ink-secondary hover:text-ink-primary',
               )}
             >
-              {active && (
-                <motion.div
-                  layoutId="navActive"
-                  className="absolute inset-0 -z-0 rounded-xl bg-white/[0.04] ring-1 ring-white/10"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                />
-              )}
-              <Icon
-                size={17}
+              {active && <ActiveHighlight slide={isDesktop} />}
+              <span
                 className={clsx(
-                  'relative z-10 transition-colors',
-                  active ? 'text-brand-300' : 'text-ink-tertiary group-hover:text-ink-secondary',
+                  'relative z-10 text-[10px] tabular tracking-[0.1em]',
+                  active ? 'text-gold' : 'text-ink-muted group-hover:text-ink-tertiary',
                 )}
-              />
-              <span className="relative z-10 flex-1 font-medium">{item.label}</span>
-              <span className="relative z-10 text-[10px] font-medium tracking-wide text-ink-muted">
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="relative z-10 flex-1 font-medium tracking-wide">{item.label}</span>
+              <span className="relative z-10 text-[9px] uppercase tracking-[0.14em] text-ink-muted">
                 {item.hint}
               </span>
             </button>
@@ -122,141 +147,129 @@ const Sidebar = ({
         })}
       </nav>
 
-      {/* Footer · theme toggle + live system clock.
-          Extra bottom padding on mobile/tablet so the LiveSystem card clears
-          iOS Safari's collapsing bottom toolbar (which eats viewport height
-          even on iPad). Full desktop (`lg+`) keeps the original 24px. */}
+      {/* Footer - switches + chronometer.
+          Extra bottom padding on mobile/tablet so the chronometer clears iOS
+          Safari's collapsing bottom toolbar. Desktop (`lg+`) keeps 24px. */}
       <div className="space-y-3 px-4 pb-14 pt-4 lg:pb-6">
-        {/* Theme + currency toggles live in the mobile top bar (App.tsx)
+        {/* Theme + currency switches live in the mobile top bar (App.tsx)
             below md, so they're hidden here on mobile to avoid duplication. */}
-        <div className="hidden space-y-3 md:block">
-          <ThemeToggle />
-          <CurrencyToggle />
+        <div className="hidden space-y-2 md:block">
+          <ThemeSwitch />
+          <CurrencySwitch />
         </div>
-        <LiveSystemCard />
+        <Chronometer />
       </div>
     </aside>
   )
 }
 
-const ThemeToggle = () => {
-  const { theme, toggle } = useTheme()
-  const isDark = theme === 'dark'
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-1.5 text-sm transition hover:border-white/[0.12]"
+/** Two-position mechanical switch - the sliding block prints solid ink. */
+const SlideSwitch = ({
+  left,
+  right,
+  isRight,
+  onToggle,
+  ariaLabel,
+}: {
+  left: React.ReactNode
+  right: React.ReactNode
+  isRight: boolean
+  onToggle: () => void
+  ariaLabel: string
+}) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    aria-label={ariaLabel}
+    className="relative flex w-full items-stretch border border-line bg-bg-base p-[3px]"
+  >
+    <motion.span
+      layout
+      transition={{ type: 'spring', stiffness: 520, damping: 38 }}
+      className={clsx(
+        'absolute bottom-[3px] top-[3px] w-[calc(50%-3px)] bg-ink-primary',
+        isRight ? 'right-[3px]' : 'left-[3px]',
+      )}
+    />
+    <span
+      className={clsx(
+        'relative z-10 flex flex-1 items-center justify-center gap-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors',
+        !isRight ? 'text-bg-base' : 'text-ink-tertiary',
+      )}
     >
-      {/* Sliding pill */}
-      <motion.div
-        layout
-        transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-        className={clsx(
-          'absolute top-1.5 bottom-1.5 w-[calc(50%-0.5rem)] rounded-xl',
-          isDark
-            ? 'right-1.5 bg-gradient-to-br from-brand-500/30 to-accent-violet/30 ring-1 ring-white/10'
-            : 'left-1.5 bg-gradient-to-br from-amber-200/60 to-amber-100/60 ring-1 ring-amber-300/40',
-        )}
-      />
-      <div
-        className={clsx(
-          'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
-          isDark ? 'text-ink-tertiary' : 'text-amber-700 dark:text-amber-200',
-        )}
-      >
-        <Sun size={14} />
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Light</span>
-      </div>
-      <div
-        className={clsx(
-          'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
-          isDark ? 'text-ink-primary' : 'text-ink-tertiary',
-        )}
-      >
-        <Moon size={14} />
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">Dark</span>
-      </div>
-    </button>
+      {left}
+    </span>
+    <span
+      className={clsx(
+        'relative z-10 flex flex-1 items-center justify-center gap-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors',
+        isRight ? 'text-bg-base' : 'text-ink-tertiary',
+      )}
+    >
+      {right}
+    </span>
+  </button>
+)
+
+const ThemeSwitch = () => {
+  const { theme, toggle } = useTheme()
+  return (
+    <SlideSwitch
+      ariaLabel={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      left={<><Sun size={13} />Day</>}
+      right={<><Moon size={13} />Night</>}
+      isRight={theme === 'dark'}
+      onToggle={toggle}
+    />
   )
 }
 
-const CurrencyToggle = () => {
+const CurrencySwitch = () => {
   const { currency, toggle, rate } = useCurrency()
-  const isUSD = currency === 'USD'
   return (
     <div>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={`Display amounts in ${isUSD ? 'INR' : 'USD'}`}
-        title={`1 USD ≈ ₹${rate.toFixed(2)} - calculations stay in INR`}
-        className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-1.5 text-sm transition hover:border-white/[0.12]"
-      >
-        {/* Sliding pill - brand-violet for USD on the left, emerald for INR
-            (the source of truth) on the right. */}
-        <motion.div
-          layout
-          transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-          className={clsx(
-            'absolute top-1.5 bottom-1.5 w-[calc(50%-0.5rem)] rounded-xl',
-            isUSD
-              ? 'left-1.5 bg-gradient-to-br from-brand-500/30 to-accent-cyan/30 ring-1 ring-white/10'
-              : 'right-1.5 bg-gradient-to-br from-accent-emerald/30 to-accent-cyan/20 ring-1 ring-accent-emerald/30',
-          )}
-        />
-        <div
-          className={clsx(
-            'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
-            isUSD ? 'text-ink-primary' : 'text-ink-tertiary',
-          )}
-        >
-          <span className="font-mono text-[13px] font-semibold leading-none">$</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">USD</span>
-        </div>
-        <div
-          className={clsx(
-            'relative z-10 flex flex-1 items-center justify-center gap-2 py-1.5 transition',
-            isUSD ? 'text-ink-tertiary' : 'text-accent-emerald',
-          )}
-        >
-          <span className="font-mono text-[13px] font-semibold leading-none">₹</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">INR</span>
-        </div>
-      </button>
-      {/* Surface the actual rate + provenance so the conversion is auditable. */}
-      <div className="mt-1.5 px-1 text-center text-[10px] tracking-wide text-ink-tertiary">
-        1 USD ≈ ₹{rate.toFixed(2)} 
+      <SlideSwitch
+        ariaLabel={`Display amounts in ${currency === 'USD' ? 'INR' : 'USD'}`}
+        left={<>$ USD</>}
+        right={<>₹ INR</>}
+        isRight={currency === 'INR'}
+        onToggle={toggle}
+      />
+      {/* Surface the live rate so the conversion is auditable. */}
+      <div className="mt-1.5 text-center text-[9px] tracking-[0.12em] text-ink-tertiary">
+        1 USD ≈ ₹{rate.toFixed(2)}
       </div>
     </div>
   )
 }
 
-const LiveSystemCard = () => {
+const Chronometer = () => {
   const todayIso = useTodayIso()
   const now = useNow()
-  // Everything in the dashboard rolls forward on the browser's local clock.
   const time = clockString(undefined, now)
+  const [hh, mm, ss] = time.split(':')
   const tz = zoneShortName(undefined, now)
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-bg-elevated/40 p-4">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-emerald" />
-        Live system
+    <div className="border border-line bg-bg-base px-4 py-3.5">
+      <div className="etch flex items-center gap-2">
+        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-sage" />
+        Chronometer
       </div>
-      <div className="mt-2.5 text-sm font-semibold text-ink-primary">
-        {fmtDateLong(todayIso)}
+      <div className="mt-2 text-xs font-semibold tracking-wide text-ink-primary">
+        {fmtDate(todayIso, 'EEE, d MMMM yyyy')}
       </div>
-      <div className="mt-0.5 flex items-baseline gap-1.5">
-        <span className="font-mono text-[13px] text-ink-secondary tabular">{time}</span>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-tertiary">
-          {tz}
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span className="text-[15px] font-medium tabular text-gold">
+          {hh}
+          <span className="blink">:</span>
+          {mm}
+          <span className="blink">:</span>
+          {ss}
         </span>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">{tz}</span>
       </div>
-      <div className="mt-2.5 border-t border-white/[0.05] pt-2.5 text-[11px] leading-relaxed text-ink-tertiary">
-        Values roll forward at midnight. No refresh needed.
+      <div className="mt-2.5 border-t border-line pt-2 text-[10px] leading-relaxed text-ink-tertiary">
+        The ledger turns at midnight. No refresh needed.
       </div>
     </div>
   )

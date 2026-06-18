@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
-import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
-import { DISBURSEMENTS } from '../data/loanData'
+import { Plate, SectionTitle, Tag, InkSwatch } from '../components/ui/Plate'
+import { DISBURSEMENTS, TRANCHE_VAR } from '../data/loanData'
 import { useTodayIso } from '../state/today'
 import { useCurrency } from '../state/currency'
 import { fmtDateLong } from '../lib/dates'
@@ -23,7 +23,7 @@ import clsx from 'clsx'
 
 type Event = { date: string; disb: number; from: number; to: number; rate: number }
 
-const COLORS = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
+const INK = DISBURSEMENTS.map((d) => TRANCHE_VAR[d.color])
 
 const Rates = () => {
   useChartTick()
@@ -62,7 +62,6 @@ const Rates = () => {
       const point: Record<string, number | string> = { date: `${m}-01` }
       DISBURSEMENTS.forEach((d, i) => {
         const dateIso = `${m}-11`
-        // find rate active on dateIso
         let active = d.ratePeriods[0]
         if (dateIso < d.disbursedDate) {
           point[`d${i}`] = NaN as unknown as number
@@ -83,48 +82,51 @@ const Rates = () => {
   return (
     <div className="space-y-6">
       <div>
-        <Pill>Rate intelligence</Pill>
-        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
-          Interest rate timeline
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag tone="gold">Plate 04</Tag>
+          <Tag>Rate registry</Tag>
+        </div>
+        <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight md:text-[36px]">
+          The price of money, over time<span className="text-vermillion">.</span>
         </h1>
-        <p className="mt-1 text-sm text-ink-secondary">
+        <p className="mt-1.5 text-xs text-ink-secondary">
           Every revision the lender has made across all {DISBURSEMENTS.length} disbursements.
         </p>
       </div>
 
-      <GlassCard pad="lg">
+      <Plate pad="lg">
         <SectionTitle
+          fig="01"
           eyebrow="Time series"
           title="Active rate, month by month"
-          description="Each line follows one tranche through every revision. Pink line is today."
+          description="Each step-line follows one tranche through every revision. The vermillion needle is today."
         />
         <div className="h-[210px] sm:h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={(d) => format(parseISO(d), "MMM ''yy")}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 10 }}
                 minTickGap={50}
               />
-              <YAxis
-                domain={[10.5, 12]}
-                tickFormatter={(v) => `${v}%`}
-                tick={{ fontSize: 11 }}
-                width={48}
-              />
+              <YAxis domain={[10.5, 12]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} width={48} />
               <Tooltip content={<RateTT />} />
-              <ReferenceLine x={`${todayIso.slice(0, 7)}-01`} stroke="#f0abfc" strokeDasharray="3 3" />
+              <ReferenceLine
+                x={`${todayIso.slice(0, 7)}-01`}
+                stroke="rgb(var(--c-vermillion))"
+                strokeDasharray="3 3"
+              />
               {DISBURSEMENTS.map((d, i) => (
                 <Line
                   key={d.applicationNumber}
                   type="stepAfter"
                   dataKey={`d${i}`}
-                  stroke={COLORS[i]}
-                  strokeWidth={2}
+                  stroke={INK[i]}
+                  strokeWidth={1.8}
                   dot={false}
-                  activeDot={{ r: 4 }}
+                  activeDot={{ r: 3.5, stroke: 'rgb(var(--bg-surface))', strokeWidth: 1.5 }}
                   connectNulls={false}
                   isAnimationActive
                   animationDuration={900}
@@ -133,87 +135,88 @@ const Rates = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px]">
           {DISBURSEMENTS.map((d, i) => (
             <div key={d.applicationNumber} className="flex items-center gap-2 text-ink-secondary">
-              <span className="h-2 w-2 rounded-full" style={{ background: COLORS[i] }} />
-              <span className="font-mono text-ink-tertiary">{d.applicationNumber}</span>
+              <InkSwatch color={INK[i]} />
+              <span className="tracking-[0.06em] text-ink-tertiary">{d.applicationNumber}</span>
             </div>
           ))}
         </div>
-      </GlassCard>
+      </Plate>
 
-      {/* Event log */}
-      <GlassCard pad="lg">
+      {/* Registry */}
+      <Plate pad="lg">
         <SectionTitle
+          fig="02"
           eyebrow="Audit trail"
-          title="Every rate change ever applied"
-          description="Each event shows which tranche was updated and how the rate moved."
+          title="Every revision ever applied"
+          description="Each entry records which tranche was repriced and how the rate moved."
+          right={<div className="etch">{allEvents.length} entries</div>}
         />
-        <div className="space-y-2.5">
+        <div className="divide-y divide-line border border-line">
           {allEvents.map((ev, i) => {
             const delta = ev.to - ev.from
             const isInitial = ev.from === ev.to
-            const Icon = isInitial ? Minus : delta > 0 ? ArrowUp : ArrowDown
-            const color = isInitial ? 'text-ink-tertiary' : delta > 0 ? 'text-accent-rose' : 'text-accent-emerald'
+            const Glyph = isInitial ? Minus : delta > 0 ? ArrowUp : ArrowDown
+            const color = isInitial ? 'text-ink-tertiary' : delta > 0 ? 'text-vermillion' : 'text-sage'
             const past = ev.date <= todayIso
             return (
               <motion.div
                 key={`${ev.disb}-${ev.date}-${i}`}
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.03 }}
+                transition={{ duration: 0.3, delay: Math.min(i * 0.03, 0.4) }}
                 className={clsx(
-                  'flex items-center gap-4 rounded-xl border border-white/[0.05] bg-bg-elevated/40 px-4 py-3',
-                  !past && 'opacity-90',
+                  'relative flex items-center gap-4 bg-bg-base px-4 py-3',
+                  !past && 'opacity-80',
                 )}
               >
-                <div
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
-                  style={{ background: `${COLORS[ev.disb]}22`, color: COLORS[ev.disb] }}
-                >
-                  <Icon size={16} className={color} />
+                <span
+                  aria-hidden
+                  className="absolute bottom-0 left-0 top-0 w-[2px]"
+                  style={{ background: INK[ev.disb] }}
+                />
+                <div className="w-7 shrink-0 text-center text-[10px] tabular text-ink-muted">
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+                <div className={clsx('flex w-5 shrink-0 justify-center', color)}>
+                  <Glyph size={15} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-ink-tertiary">
+                  <div className="text-[9px] uppercase tracking-[0.16em] text-ink-tertiary">
                     {fmtDateLong(ev.date)}
                   </div>
-                  <div className="mt-0.5 break-words text-sm">
-                    <span className="font-mono text-ink-secondary">
+                  <div className="mt-0.5 break-words text-[12px]">
+                    <span className="tracking-[0.04em] text-ink-secondary">
                       {DISBURSEMENTS[ev.disb].applicationNumber}
                     </span>{' '}
-                    {isInitial ? 'opened at' : 'rate revised to'}{' '}
-                    <span className="font-semibold text-ink-primary tabular">
-                      {formatPercent(ev.to, 2)}
-                    </span>
+                    <span className="text-ink-tertiary">{isInitial ? 'opened at' : 'revised to'}</span>{' '}
+                    <span className="font-semibold tabular text-ink-primary">{formatPercent(ev.to, 2)}</span>
                   </div>
                 </div>
-                {/* Right summary is supplementary - the description already
-                    conveys the key info (e.g. "rate revised to 11.70%"). On
-                    narrow screens we hide it so the row stays readable; at
-                    sm+ it pins to the right with the From → To breakdown. */}
+                {/* From → To breakdown - hidden on narrow screens. */}
                 <div className="hidden text-right sm:block">
-                  {!isInitial && (
+                  {!isInitial ? (
                     <>
-                      <div className="text-[11px] text-ink-tertiary">From → To</div>
-                      <div className="font-mono text-sm">
-                        <span className="text-ink-secondary tabular">
-                          {formatPercent(ev.from, 2)}
-                        </span>{' '}
-                        <span className="text-ink-tertiary">→</span>{' '}
-                        <span className={clsx('tabular', color)}>{formatPercent(ev.to, 2)}</span>
+                      <div className="text-[9px] uppercase tracking-[0.16em] text-ink-tertiary">from → to</div>
+                      <div className="mt-0.5 text-[12px]">
+                        <span className="tabular text-ink-secondary">{formatPercent(ev.from, 2)}</span>{' '}
+                        <span className="text-ink-muted">→</span>{' '}
+                        <span className={clsx('tabular font-semibold', color)}>{formatPercent(ev.to, 2)}</span>
                       </div>
                     </>
-                  )}
-                  {isInitial && (
-                    <div className="text-[11px] text-ink-tertiary">Disbursement opens</div>
+                  ) : (
+                    <div className="text-[9px] uppercase tracking-[0.16em] text-ink-tertiary">
+                      disbursement opens
+                    </div>
                   )}
                 </div>
               </motion.div>
             )
           })}
         </div>
-      </GlassCard>
+      </Plate>
     </div>
   )
 }
@@ -221,18 +224,16 @@ const Rates = () => {
 const RateTT = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null
   return (
-    <div className="rounded-xl border border-white/10 bg-bg-elevated/95 px-3 py-2 text-xs backdrop-blur-md shadow-glow">
-      <div className="mb-1 font-semibold">{format(parseISO(label), 'MMM yyyy')}</div>
+    <div className="readout">
+      <div className="etch mb-1.5 !text-[9px]">{format(parseISO(label), 'MMM yyyy')}</div>
       {payload.map((p: any, i: number) =>
         p.value && !isNaN(p.value) ? (
           <div key={p.dataKey} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full" style={{ background: COLORS[i] }} />
-              <span className="font-mono text-ink-tertiary">
-                {DISBURSEMENTS[i].applicationNumber}
-              </span>
+              <span aria-hidden className="h-2 w-2" style={{ background: INK[i] }} />
+              <span className="text-ink-tertiary">{DISBURSEMENTS[i].applicationNumber}</span>
             </div>
-            <span className="font-semibold tabular">{formatPercent(p.value, 2)}</span>
+            <span className="font-semibold tabular text-ink-primary">{formatPercent(p.value, 2)}</span>
           </div>
         ) : null,
       )}

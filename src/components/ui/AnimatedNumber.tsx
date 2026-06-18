@@ -16,9 +16,9 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
  * `value` changes animate from the previously-displayed value to the new
  * target over `duration` ms with a cubic ease-out.
  *
- * For first-mount count-up animations (where you want it to grow from 0 →
- * value on initial paint), use the inline `useCountUp` hook in
- * `LiveOutstandingHero.tsx` instead - that one explicitly seeds `0`.
+ * For first-mount wind-up animations (growing from 0 → value on initial
+ * paint), see the `useWindUp` hook in `LiveOutstandingHero.tsx` - it steps
+ * discretely so the odometer wheels can complete each roll.
  */
 export const AnimatedNumber = ({
   value,

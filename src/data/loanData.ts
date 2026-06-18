@@ -3,10 +3,19 @@ import type { Disbursement, RatePeriod, SchedulePayment } from './loanData.gener
 
 export type { Disbursement, RatePeriod, SchedulePayment }
 
-// Color is assigned by tranche index. Add more colors here as new tranches
-// are added - must stay in sync with switch sites that paint dot/pill colors
-// (search the codebase for `color === 'violet'` for the touchpoints).
-const COLORS = ['violet', 'cyan', 'emerald', 'pink'] as const
+// Ink is assigned by tranche index. Add more inks here as new tranches are
+// added - the hex values live in src/index.css as `--c-<name>` variables and
+// the Tailwind classes (`text-gold`, `bg-cerulean/10`, …) follow from there.
+const COLORS = ['gold', 'cerulean', 'sage', 'plum'] as const
+
+// One canonical place to turn a tranche ink into a CSS color expression.
+// Components and charts use `var(--c-…)` so the hue flips with the theme.
+export const TRANCHE_VAR: Record<(typeof COLORS)[number], string> = {
+  gold: 'rgb(var(--c-gold))',
+  cerulean: 'rgb(var(--c-cerulean))',
+  sage: 'rgb(var(--c-sage))',
+  plum: 'rgb(var(--c-plum))',
+}
 
 export type DisbursementColor = (typeof COLORS)[number]
 

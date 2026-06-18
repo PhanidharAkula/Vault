@@ -11,8 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { motion } from 'framer-motion'
-import { DISBURSEMENTS } from '../../data/loanData'
+import { DISBURSEMENTS, TRANCHE_VAR } from '../../data/loanData'
 import { buildCombinedTimeline } from '../../lib/calculations'
 import { fmtDateShort, fmtDateLong } from '../../lib/dates'
 import { formatINRCompact, formatINR } from '../../lib/format'
@@ -20,7 +19,8 @@ import { useChartTick } from '../../lib/useChartTick'
 
 type Mode = 'total' | 'stacked'
 
-const COLOR = ['#a78bfa', '#22d3ee', '#34d399', '#f472b6']
+const INK = DISBURSEMENTS.map((d) => TRANCHE_VAR[d.color])
+const TODAY_INK = 'rgb(var(--c-vermillion))'
 
 export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
   useChartTick()
@@ -32,25 +32,10 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
   return (
     <div>
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-          Outstanding · Past, present & future
-        </div>
-        <div className="flex w-fit items-center rounded-full border border-white/[0.06] bg-bg-elevated/60 p-0.5 text-xs">
+        <div className="etch">Outstanding · past, present &amp; future</div>
+        <div className="seg w-fit">
           {(['stacked', 'total'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`relative rounded-full px-3 py-1 capitalize transition ${
-                mode === m ? 'text-ink-primary' : 'text-ink-tertiary hover:text-ink-secondary'
-              }`}
-            >
-              {mode === m && (
-                <motion.div
-                  layoutId="modeBg"
-                  className="absolute inset-0 -z-10 rounded-full bg-white/[0.06]"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
+            <button key={m} data-on={mode === m} onClick={() => setMode(m)} className="seg-btn capitalize">
               {m}
             </button>
           ))}
@@ -61,52 +46,44 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
-              {/* One vertical fill gradient per tranche, generated from the
-                  DISBURSEMENTS list so new tranches automatically pick up a
-                  matching fill (previously the 4th tranche had only a stroke
-                  because `g3` wasn't declared here). */}
               {DISBURSEMENTS.map((d, i) => (
                 <linearGradient key={d.applicationNumber} id={`g${i}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor={COLOR[i]} stopOpacity={0.6} />
-                  <stop offset="1" stopColor={COLOR[i]} stopOpacity={0} />
+                  <stop offset="0" stopColor={INK[i]} stopOpacity={0.5} />
+                  <stop offset="1" stopColor={INK[i]} stopOpacity={0.04} />
                 </linearGradient>
               ))}
               <linearGradient id="gtotal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#818cf8" stopOpacity={0.55} />
-                <stop offset="1" stopColor="#818cf8" stopOpacity={0} />
+                <stop offset="0" stopColor="rgb(var(--c-gold))" stopOpacity={0.45} />
+                <stop offset="1" stopColor="rgb(var(--c-gold))" stopOpacity={0.03} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={fmtDateShort}
-              tick={{ fontSize: 11 }}
-              minTickGap={42}
-            />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="date" tickFormatter={fmtDateShort} tick={{ fontSize: 10 }} minTickGap={42} />
             <YAxis
               tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 10 }}
               width={64}
-              /* Pad the top of the scale by ~15% so the peak of the area
-                 doesn't sit flush against the chart's top edge - there's a
-                 tick mark above the data's max for breathing room. */
+              /* Pad the top of the scale ~15% so the peak doesn't sit flush
+                 against the chart's top edge. */
               domain={[0, (max: number) => max * 1.15]}
             />
-            <Tooltip content={<TimelineTooltip mode={mode} />} cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeDasharray: '4 4' }} />
+            <Tooltip
+              content={<TimelineTooltip mode={mode} />}
+              cursor={{ stroke: 'var(--chart-axis)', strokeDasharray: '3 3' }}
+            />
 
             {/* Rate-change markers */}
-            <Customized component={RateChangeMarkers as any} />
+            <Customized component={RateChangeMarkers as never} />
 
             {/* Today */}
-            <ReferenceLine x={todayData?.date} stroke="#f0abfc" strokeDasharray="3 3" strokeWidth={1.4}>
-            </ReferenceLine>
+            <ReferenceLine x={todayData?.date} stroke={TODAY_INK} strokeDasharray="3 3" strokeWidth={1.2} />
             {todayData && (
               <ReferenceDot
                 x={todayData.date}
                 y={todayData.total}
                 r={4}
-                fill="#f0abfc"
-                stroke="#0d0f17"
+                fill={TODAY_INK}
+                stroke="rgb(var(--bg-surface))"
                 strokeWidth={2}
               />
             )}
@@ -118,8 +95,8 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
                   type="monotone"
                   dataKey={`d${i}`}
                   stackId="1"
-                  stroke={COLOR[i]}
-                  strokeWidth={1.6}
+                  stroke={INK[i]}
+                  strokeWidth={1.4}
                   fill={`url(#g${i})`}
                   isAnimationActive
                   animationDuration={900}
@@ -130,8 +107,8 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
               <Area
                 type="monotone"
                 dataKey="total"
-                stroke="#a5b4fc"
-                strokeWidth={2}
+                stroke="rgb(var(--c-gold))"
+                strokeWidth={1.8}
                 fill="url(#gtotal)"
                 isAnimationActive
                 animationDuration={900}
@@ -142,17 +119,17 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px]">
         {DISBURSEMENTS.map((d, i) => (
           <div key={d.applicationNumber} className="flex items-center gap-2 text-ink-secondary">
-            <span className="h-2 w-2 rounded-full" style={{ background: COLOR[i] }} />
-            <span className="font-mono text-ink-tertiary">{d.applicationNumber}</span>
-            <span>· {formatINRCompact(d.disbursedAmount)}</span>
+            <span aria-hidden className="h-2 w-2" style={{ background: INK[i] }} />
+            <span className="tracking-[0.06em] text-ink-tertiary">{d.applicationNumber}</span>
+            <span className="tabular">· {formatINRCompact(d.disbursedAmount)}</span>
           </div>
         ))}
-        <div className="ml-auto flex items-center gap-2 text-ink-tertiary">
-          <span className="h-2 w-2 rounded-full bg-accent-pink" />
-          Today
+        <div className="ml-auto flex items-center gap-2 text-[9px] uppercase tracking-[0.18em] text-vermillion">
+          <span aria-hidden className="inline-block h-[9px] w-px bg-vermillion" />
+          today
         </div>
       </div>
     </div>
@@ -162,22 +139,22 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
 const TimelineTooltip = ({ active, payload, label, mode }: any) => {
   if (!active || !payload || !payload.length) return null
   return (
-    <div className="rounded-xl border border-white/10 bg-bg-elevated/95 px-3 py-2 text-xs backdrop-blur-md shadow-glow">
-      <div className="mb-1 font-semibold text-ink-primary">{fmtDateLong(label)}</div>
+    <div className="readout">
+      <div className="etch mb-1.5 !text-[9px]">{fmtDateLong(label)}</div>
       {mode === 'stacked' &&
         payload.map((p: any, i: number) => (
-          <div key={p.dataKey} className="flex items-center justify-between gap-3">
+          <div key={p.dataKey} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full" style={{ background: COLOR[i] }} />
-              <span className="font-mono text-ink-tertiary">{DISBURSEMENTS[i].applicationNumber}</span>
+              <span aria-hidden className="h-2 w-2" style={{ background: INK[i] }} />
+              <span className="text-ink-tertiary">{DISBURSEMENTS[i].applicationNumber}</span>
             </div>
-            <div className="font-semibold text-ink-primary tabular">{formatINR(p.value)}</div>
+            <div className="font-semibold tabular text-ink-primary">{formatINR(p.value)}</div>
           </div>
         ))}
       {mode === 'total' && (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-4">
           <span className="text-ink-tertiary">Total</span>
-          <span className="font-semibold text-ink-primary tabular">{formatINR(payload[0].value)}</span>
+          <span className="font-semibold tabular text-ink-primary">{formatINR(payload[0].value)}</span>
         </div>
       )}
     </div>
@@ -204,16 +181,8 @@ const RateChangeMarkers = ({ xAxisMap, yAxisMap }: any) => {
           if (y == null || isNaN(y)) return null
           return (
             <g key={`${d.applicationNumber}-${rc.date}`}>
-              <line
-                x1={x}
-                x2={x}
-                y1={y - 6}
-                y2={y + 6}
-                stroke={COLOR[i]}
-                strokeWidth={1.5}
-                opacity={0.75}
-              />
-              <circle cx={x} cy={y} r={3} fill={COLOR[i]} stroke="#0d0f17" strokeWidth={1.5} />
+              <line x1={x} x2={x} y1={y - 6} y2={y + 6} stroke={INK[i]} strokeWidth={1.4} opacity={0.8} />
+              <circle cx={x} cy={y} r={2.6} fill={INK[i]} stroke="rgb(var(--bg-surface))" strokeWidth={1.4} />
             </g>
           )
         }),

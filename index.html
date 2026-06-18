@@ -1,19 +1,46 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <!-- `maximum-scale=1` stops iOS Safari from auto-zooming when a sub-16px
+         input (the schedule search) is focused. The app is a fixed, read-only
+         dashboard, so capping zoom is consistent with its locked-down feel. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
     <!-- Paint Safari's URL bar / bottom toolbar / iOS status bar with the
          page's background colour so the chrome blends into the content
          instead of showing its own translucent overlay over the scroll
          edges. Variants flip with the active theme. -->
-    <meta name="theme-color" content="#f7f8fb" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#07080d" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#efe9dc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d0b08" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Vault Intelligence</title>
+    <title>Vault - Private Loan Ledger</title>
+    <meta
+      name="description"
+      content="An engraved banking instrument that tracks a multi-tranche education loan end to end: live outstanding, amortization schedule, rate history, and analytics."
+    />
+    <!-- Social preview (Open Graph + Twitter). `og.png` is 1200x630 and resolves
+         relative to the page URL; swap in an absolute URL once the deploy domain
+         is fixed for the widest crawler support. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vault - Private Loan Ledger" />
+    <meta
+      property="og:description"
+      content="An engraved banking instrument that tracks a multi-tranche education loan end to end."
+    />
+    <meta property="og:image" content="og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Vault - a private loan ledger" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vault - Private Loan Ledger" />
+    <meta
+      name="twitter:description"
+      content="An engraved banking instrument that tracks a multi-tranche education loan end to end."
+    />
+    <meta name="twitter:image" content="og.png" />
     <script>
       // Read persisted theme + currency before React boots. URL params override
       // localStorage (handy for sharing a screenshot or testing).

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import Sidebar, { type RouteKey } from './components/Sidebar'
 import OverviewPage from './pages/Overview'
 import DisbursementsPage from './pages/Disbursements'
@@ -29,6 +29,10 @@ const PageRouter = () => {
   // Mobile sidebar drawer state - only matters below `md` (768px). On `md+`
   // the sidebar is permanently visible and this flag is ignored.
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Needed so the drawer can dim the browser chrome (status bar / address bar)
+  // to a tone that matches the active theme's darkened backdrop.
+  const { theme } = useTheme()
 
   // bind hash for shareable routes
   useEffect(() => {
@@ -61,19 +65,61 @@ const PageRouter = () => {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // Lock body scroll while drawer is open on mobile.
+  // Close the drawer when the viewport reaches md+ (e.g. phone rotated to
+  // landscape), where the rail is permanent - otherwise the scroll lock below
+  // would stay engaged on a layout that has no drawer to dismiss it.
   useEffect(() => {
-    if (drawerOpen) {
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.overflow = ''
-      }
+    const mq = window.matchMedia('(min-width: 768px)')
+    const onChange = () => mq.matches && setDrawerOpen(false)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  // Lock the page + blend the browser chrome while the mobile drawer is open.
+  //
+  // iOS Safari ignores `overflow: hidden` on <body> for touch scrolling, so the
+  // page kept rubber-band scrolling behind the drawer and bled through the
+  // top/bottom safe areas (status bar + address bar). Pinning the body with
+  // `position: fixed` at the current offset freezes it AND - by resetting the
+  // scroll to 0 - lets the fixed backdrop cover the whole screen solidly, safe
+  // areas included (at a non-zero offset iOS leaves those edges transparent).
+  // The side effect of that scroll reset (Framer animating the active-nav
+  // highlight across the delta) is handled in Sidebar.tsx by dropping its
+  // shared-layout animation.
+  //
+  // We also retint <meta theme-color> to a darkened tone so the status bar and
+  // address bar match the dimmed backdrop instead of staying bright; restored
+  // to the theme's base colour on close.
+  useEffect(() => {
+    if (!drawerOpen) return
+    const { body } = document
+    const scrollY = window.scrollY
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    body.style.width = '100%'
+
+    const dim = theme === 'dark' ? '#050403' : '#605d58'
+    const base = theme === 'dark' ? '#0d0b08' : '#efe9dc'
+    const setChrome = (c: string) =>
+      document
+        .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+        .forEach((m) => (m.content = c))
+    setChrome(dim)
+
+    return () => {
+      body.style.position = ''
+      body.style.top = ''
+      body.style.left = ''
+      body.style.right = ''
+      body.style.width = ''
+      window.scrollTo(0, scrollY)
+      setChrome(base)
     }
-  }, [drawerOpen])
+  }, [drawerOpen, theme])
 
   // Scroll to top in the gap between exit and enter - invisible to the user.
-  // Doing it before setRoute makes the current page visibly jump to the top
-  // before fading out; doing it after the new page mounts feels late.
   // `onExitComplete` fires when the old motion.div has finished exiting, but
   // before the new one starts entering.
   const handleExitComplete = () => {
@@ -111,34 +157,34 @@ const PageRouter = () => {
 
   return (
     <div className="relative flex min-h-screen">
-      {/* background mesh */}
+      {/* Ledger margin rule - the vermillion line every ruled page carries.
+          Pinned just inside the content gutter; desktop only. */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-mesh-1 opacity-90"
         aria-hidden
+        className="pointer-events-none fixed bottom-0 top-0 z-0 hidden w-px bg-vermillion/25 md:block"
+        style={{ left: 'calc(260px + 22px)' }}
       />
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 grid-bg opacity-[0.35]"
-        aria-hidden
-      />
+
       {/* Hamburger toggle - shown only below md, AND only while the drawer
-          is closed. When the drawer is open the user closes it by tapping
-          the backdrop or pressing Escape, so an explicit close button would
-          just overlap the sidebar's own logo. */}
+          is closed (the user closes it by tapping the backdrop or Escape). */}
       {!drawerOpen && (
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
+          aria-label="Open index"
           aria-expanded={false}
-          className="fixed left-4 top-4 z-50 grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 text-ink-primary shadow-lg backdrop-blur-md md:hidden"
+          className="fixed left-4 top-4 z-50 grid h-10 w-10 place-items-center border border-line-strong bg-bg-surface/95 text-ink-primary shadow-float backdrop-blur-sm md:hidden"
         >
-          <Menu size={18} />
+          <span aria-hidden className="flex w-4 flex-col gap-[4px]">
+            <span className="h-px w-full bg-current" />
+            <span className="h-px w-3/4 bg-current" />
+            <span className="h-px w-full bg-current" />
+          </span>
         </button>
       )}
 
-      {/* Quick toggles - mobile only. Mirrors the hamburger on the right so
-          the top bar feels balanced. Currency sits to the left of theme.
-          Desktop has the full pills inside the sidebar. */}
+      {/* Quick toggles - mobile only. Currency sits to the left of theme.
+          Desktop has the full switches inside the sidebar. */}
       {!drawerOpen && (
         <div className="fixed right-4 top-4 z-50 flex items-center gap-2 md:hidden">
           <MobileCurrencyButton />
@@ -156,7 +202,7 @@ const PageRouter = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setDrawerOpen(false)}
-            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-30 bg-black/60 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -164,17 +210,17 @@ const PageRouter = () => {
       <Sidebar route={route} onNavigate={navigate} drawerOpen={drawerOpen} />
 
       {/* Main content. `ml-0` on mobile (drawer overlays); `ml-[260px]` on md+
-          where the sidebar is permanently in flow. `pt-16` on mobile to clear
-          the floating hamburger; `pt-8` on md+ where there's no hamburger. */}
-      <main className="ml-0 min-w-0 max-w-full flex-1 overflow-x-clip md:ml-[260px]">
-        <div className="overflow-x-clip px-4 pb-16 pt-20 md:px-8 md:pt-8">
+          where the rail is permanently in flow. `pt-20` on mobile clears the
+          floating hamburger; `pt-8` on md+. */}
+      <main className="relative ml-0 min-w-0 max-w-full flex-1 overflow-x-clip md:ml-[260px]">
+        <div className="overflow-x-clip px-4 pb-16 pt-20 md:px-10 md:pt-8">
           <AnimatePresence mode="wait" initial={false} onExitComplete={handleExitComplete}>
             <motion.div
               key={route}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
             >
               {page}
             </motion.div>
@@ -193,12 +239,12 @@ const MobileThemeButton = () => {
       type="button"
       onClick={toggle}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 shadow-lg backdrop-blur-md transition-colors"
+      className="grid h-10 w-10 place-items-center border border-line-strong bg-bg-surface/95 shadow-float backdrop-blur-sm"
     >
       {isDark ? (
-        <Moon size={18} className="text-brand-300" />
+        <Moon size={17} className="text-gold" />
       ) : (
-        <Sun size={18} className="text-accent-amber" />
+        <Sun size={17} className="text-vermillion" />
       )}
     </button>
   )
@@ -212,11 +258,9 @@ const MobileCurrencyButton = () => {
       type="button"
       onClick={toggle}
       aria-label={`Display amounts in ${isUSD ? 'INR' : 'USD'}`}
-      className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-bg-elevated/80 font-mono text-[15px] font-semibold shadow-lg backdrop-blur-md transition-colors"
+      className="grid h-10 w-10 place-items-center border border-line-strong bg-bg-surface/95 text-[15px] font-semibold shadow-float backdrop-blur-sm"
     >
-      <span className={isUSD ? 'text-brand-300' : 'text-accent-emerald'}>
-        {isUSD ? '$' : '₹'}
-      </span>
+      <span className={isUSD ? 'text-cerulean' : 'text-sage'}>{isUSD ? '$' : '₹'}</span>
     </button>
   )
 }

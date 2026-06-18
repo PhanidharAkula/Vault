@@ -1,338 +1,381 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, CalendarClock, Sparkles } from 'lucide-react'
-import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
+import clsx from 'clsx'
+import { Plate, SectionTitle, Tag, InkSwatch } from '../components/ui/Plate'
+import { Escapement } from '../components/ui/decor'
+import { Odometer, RollingDigit } from '../components/ui/Odometer'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
-import { useTodayIso } from '../state/today'
+import { useNow, useTodayIso } from '../state/today'
 import { useCurrency } from '../state/currency'
 import type { AggregateStatus } from '../lib/calculations'
 import { computeAggregate, computeLiveStatus } from '../lib/calculations'
-import { DISBURSEMENTS } from '../data/loanData'
-import { formatINR, formatINRCompact } from '../lib/format'
+import { DISBURSEMENTS, TRANCHE_VAR } from '../data/loanData'
+import type { DisbursementView } from '../data/loanData'
+import { formatINR, formatINRCompact, formatINRPrecise } from '../lib/format'
 import { fmtDateLong } from '../lib/dates'
 import { clockInZone, zoneMidnight } from '../lib/timezone'
-import { useCountUp } from '../lib/useCountUp'
 import { differenceInSeconds } from 'date-fns'
+
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+
+const useWindUp = (steps = 10, interval = 110): number => {
+  const [t, setT] = useState(0)
+  useEffect(() => {
+    let i = 0
+    const id = setInterval(() => {
+      i++
+      setT(easeOut(i / steps))
+      if (i >= steps) clearInterval(id)
+    }, interval)
+    return () => clearInterval(id)
+  }, [steps, interval])
+  return t
+}
 
 const Live = () => {
   const todayIso = useTodayIso()
+  const now = useNow()
   useCurrency() // subscribe so currency toggle re-renders the ticker + accrual stats
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
   const ratePerSec = agg.totalDailyInterest / 86400
-  const todayOutstanding = Math.round(agg.totalCurrentOutstanding)
-  // Count up from 0 to the day's outstanding on mount, matching the Overview
-  // hero. Subsequent day-rollovers tween from the previous value to the new
-  // one (handled inside useCountUp).
-  const animatedOutstanding = useCountUp(todayOutstanding, 1700)
+  const clock = clockInZone(undefined, now)
+  const secToday = clock.hour * 3600 + clock.minute * 60 + clock.second
+  const liveOutstanding = agg.totalCurrentOutstanding + agg.totalDailyInterest * (secToday / 86400)
+  const accruedToday = agg.totalDailyInterest * (secToday / 86400)
+
+  const windT = useWindUp()
 
   return (
     <div className="space-y-6">
       <div className="section-enter section-enter-d0">
-        <Pill tone="emerald">Realtime</Pill>
-        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Live view</h1>
-        <p className="mt-1 text-sm text-ink-secondary">
-          Outstanding rolls forward each day at midnight. The accrual rates below show how fast it
-          grows in the background.
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag tone="gold">Plate 05</Tag>
+          <Tag tone="vermillion">
+            <span aria-hidden className="h-1 w-1 rounded-full bg-vermillion blink" />
+            realtime
+          </Tag>
+        </div>
+        <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight md:text-[36px]">
+          The live desk<span className="text-vermillion">.</span>
+        </h1>
+        <p className="mt-1.5 text-xs text-ink-secondary">
+          Interest never sleeps. The paise wheels below are turning right now - this is the meter
+          running.
         </p>
       </div>
 
-      {/* Hero - daily integer */}
+      {/* The meter */}
       <div className="section-enter section-enter-d1">
-        <GlassCard pad="lg" className="!p-5 md:!p-7">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-            <div>
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-                <Activity size={12} className="text-accent-emerald" />
-                Today's outstanding
+        <Plate pad="lg" className="!p-5 md:!p-7">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
+            <div className="min-w-0">
+              <div className="etch flex items-center gap-2">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-vermillion blink" />
+                Outstanding · this very second
               </div>
-              <div className="mt-3 font-display text-[44px] font-semibold leading-none tracking-tight tabular gradient-text-brand sm:text-[58px] md:text-[72px]">
-                {formatINR(Math.round(animatedOutstanding))}
+              <div className="mt-4 overflow-x-clip">
+                <Odometer
+                  value={liveOutstanding * windT}
+                  format={formatINRPrecise}
+                  className="text-[clamp(32px,8vw,66px)] font-medium tabular tracking-tight text-ink-primary"
+                />
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-secondary">
-                <Stat label="per minute" value={`+${formatINR(ratePerSec * 60)}`} />
-                <Stat label="per hour" value={`+${formatINR(ratePerSec * 3600)}`} />
-                <Stat label="per day" value={`+${formatINR(agg.totalDailyInterest)}`} />
-                <Stat label="per month" value={`+${formatINRCompact(agg.totalDailyInterest * 30)}`} />
+
+              <div className="mt-5 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
+                <RateCell label="per second" value={`+${formatINRPrecise(ratePerSec)}`} />
+                <RateCell label="per minute" value={`+${formatINR(ratePerSec * 60)}`} />
+                <RateCell label="per hour" value={`+${formatINR(ratePerSec * 3600)}`} />
+                <RateCell label="per day" value={`+${formatINR(agg.totalDailyInterest)}`} />
               </div>
 
               <div className="mt-6">
-                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-tertiary">
-                  <Sparkles size={12} className="text-accent-violet" /> Accrued since the last scheduled rest
-                </div>
-                <div className="mt-1 font-display text-3xl font-semibold tabular gradient-text-cyan">
+                <div className="etch">Accrued since the last scheduled rest</div>
+                <div className="display-num mt-1.5 font-display text-3xl font-medium tabular text-gold">
                   <AnimatedNumber value={Math.round(agg.totalAccruedToday)} format={formatINR} duration={900} />
                 </div>
-                <div className="mt-1 text-[11px] text-ink-tertiary">
+                <div className="mt-1 text-[10px] tracking-[0.06em] text-ink-tertiary">
                   {agg.perDisbursement[0]?.daysSinceBaseline ?? 0} days × {formatINR(agg.totalDailyInterest)} / day
                 </div>
               </div>
             </div>
 
-            <PulseVisualizer />
+            {/* The escapement */}
+            <div className="grid place-items-center self-center py-2">
+              <div className="relative grid place-items-center">
+                <Escapement size={186} />
+              </div>
+              <div className="mt-5 text-center">
+                <div className="etch">Compounding</div>
+                <div className="mt-1 font-display text-base italic text-ink-secondary">
+                  day by day, every day
+                </div>
+                <div className="mt-2 text-[10px] tabular text-ink-tertiary">
+                  +{formatINRPrecise(accruedToday)} so far today
+                </div>
+              </div>
+            </div>
           </div>
-        </GlassCard>
+        </Plate>
       </div>
 
-      {/* Per-tranche live */}
+      {/* Per-tranche meters */}
       <div className="section-enter section-enter-d2">
         <SectionTitle
+          fig="01"
           eyebrow="Per tranche"
-          title="Real-time accrual"
+          title="Four engines, one debt"
           description="Each tranche carries its own daily-interest engine."
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {DISBURSEMENTS.map((d, i) => {
             const live = computeLiveStatus(d, todayIso)
-            return (
-              <LiveTrancheCard key={d.applicationNumber} disbursement={d} live={live} index={i} />
-            )
+            return <LiveTrancheCard key={d.applicationNumber} disbursement={d} live={live} index={i} />
           })}
         </div>
       </div>
 
-      {/* Combined countdown - single tile since all tranches share the same due date */}
+      {/* Combined countdown */}
       <div className="section-enter section-enter-d3">
-        <GlassCard pad="lg">
+        <Plate pad="lg">
           <SectionTitle
+            fig="02"
             eyebrow="Countdown"
             title="Next combined payment"
-            description="All tranches share the same due date and time, one timer covers them all."
+            description="All tranches share the same due date - one timer covers them all."
           />
           <CombinedCountdown agg={agg} />
-        </GlassCard>
+        </Plate>
       </div>
 
-      {/* Daily heartbeat */}
+      {/* Day meter */}
       <div className="section-enter section-enter-d4">
-        <GlassCard pad="lg">
+        <Plate pad="lg">
           <SectionTitle
-            eyebrow="Heartbeat"
-            title="Today's interest, hour by hour"
-            description="A live progress bar of today, with running cash accrual."
+            fig="03"
+            eyebrow="Today's meter"
+            title="The day, hour by hour"
+            description="A graduated meter of today with the running cash accrual."
           />
-          <DayHeartbeat dailyInterest={agg.totalDailyInterest} />
-        </GlassCard>
+          <DayMeter dailyInterest={agg.totalDailyInterest} />
+        </Plate>
       </div>
     </div>
   )
 }
 
-const Stat = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="flex items-center gap-2 text-sm">
-    <span className="text-[11px] uppercase tracking-[0.14em] text-ink-tertiary">{label}</span>
-    <span className="font-medium tabular text-ink-primary">{value}</span>
+const RateCell = ({ label, value }: { label: string; value: string }) => (
+  <div className="bg-bg-base px-3 py-2.5">
+    <div className="text-[8px] uppercase tracking-[0.18em] text-ink-tertiary">{label}</div>
+    <div className="mt-1 text-[12px] font-semibold tabular text-vermillion">{value}</div>
   </div>
 )
-
-// Self-contained pulse: rings + center disc share a single relatively-positioned
-// box so the absolute pulses can use inset-0 and stay perfectly centered.
-// CSS keyframe animation runs immediately on render (no React state involvement).
-const PulseVisualizer = () => {
-  return (
-    <div className="grid place-items-center self-center">
-      <div className="relative h-44 w-44">
-        <span
-          aria-hidden
-          className="pulse-ring absolute inset-0 rounded-full bg-accent-emerald/15"
-        />
-        <span
-          aria-hidden
-          className="pulse-ring absolute inset-0 rounded-full bg-accent-emerald/15"
-          style={{ animationDelay: '0.8s' }}
-        />
-        <span
-          aria-hidden
-          className="pulse-ring absolute inset-0 rounded-full bg-accent-emerald/15"
-          style={{ animationDelay: '1.6s' }}
-        />
-        <div className="absolute inset-0 grid place-items-center">
-          <div className="grid h-32 w-32 place-items-center rounded-full bg-gradient-to-br from-accent-emerald to-accent-cyan shadow-glow-emerald">
-            <div className="grid h-24 w-24 place-items-center rounded-full bg-bg-base/80 ring-1 ring-white/10 backdrop-blur-md">
-              <Activity className="text-accent-emerald" size={28} />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 text-center">
-        <div className="text-[11px] uppercase tracking-[0.16em] text-ink-tertiary">Compounding</div>
-        <div className="mt-1 font-display text-base">Day by day, every day</div>
-      </div>
-    </div>
-  )
-}
 
 const LiveTrancheCard = ({
   disbursement,
   live,
   index,
 }: {
-  disbursement: any
-  live: any
+  disbursement: DisbursementView
+  live: ReturnType<typeof computeLiveStatus>
   index: number
 }) => {
   const ratePerSec = live.dailyInterest / 86400
-  const COLORS = { violet: '#a78bfa', cyan: '#22d3ee', emerald: '#34d399', pink: '#f472b6' } as const
-  const accent = COLORS[disbursement.color as keyof typeof COLORS]
+  const ink = TRANCHE_VAR[disbursement.color]
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="glass relative overflow-hidden rounded-2xl p-5"
+      className="plate relative p-5"
     >
-      <div className="absolute left-0 top-0 h-[2px] w-full" style={{ background: accent }} />
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-ink-tertiary">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
+      <span aria-hidden className="absolute left-0 right-0 top-0 h-[2px]" style={{ background: ink }} />
+      <div className="etch flex items-center gap-2">
+        <InkSwatch color={ink} className="!h-1.5 !w-1.5" />
         {disbursement.shortName}
       </div>
-      <div className="mt-2 font-mono text-xs text-ink-tertiary">{disbursement.applicationNumber}</div>
-      <div className="mt-3 font-display text-3xl font-semibold tabular" style={{ color: accent }}>
+      <div className="mt-1.5 text-[10px] tracking-[0.08em] text-ink-tertiary">
+        № {disbursement.applicationNumber}
+      </div>
+      <div className="display-num mt-3 font-display text-[26px] font-medium leading-none tabular" style={{ color: ink }}>
         <AnimatedNumber value={Math.round(live.currentOutstanding)} format={formatINR} duration={1100} />
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-ink-tertiary">
+      <div className="mt-4 grid grid-cols-3 divide-x divide-line border border-line bg-bg-base text-center">
         <Mini label="rate" value={`${live.rate.toFixed(2)}%`} />
         <Mini label="/min" value={`+₹${(ratePerSec * 60).toFixed(2)}`} />
         <Mini label="/day" value={`+${formatINRCompact(live.dailyInterest)}`} />
       </div>
-      <div className="mt-3 text-[11px] text-ink-tertiary">
-        {live.daysSinceBaseline} day{live.daysSinceBaseline === 1 ? '' : 's'} since last scheduled rest →{' '}
-        <span className="text-ink-secondary tabular">+{formatINRCompact(live.accruedSinceBaseline)}</span> accrued.
+      <div className="mt-3 text-[10px] leading-relaxed text-ink-tertiary">
+        {live.daysSinceBaseline} day{live.daysSinceBaseline === 1 ? '' : 's'} since last rest →{' '}
+        <span className="tabular text-ink-secondary">+{formatINRCompact(live.accruedSinceBaseline)}</span>{' '}
+        accrued.
       </div>
     </motion.div>
   )
 }
 
 const Mini = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <div className="text-[10px] uppercase tracking-[0.12em] text-ink-tertiary">{label}</div>
-    <div className="mt-0.5 font-medium text-ink-primary tabular">{value}</div>
+  <div className="px-1.5 py-2">
+    <div className="text-[8px] uppercase tracking-[0.16em] text-ink-tertiary">{label}</div>
+    <div className="mt-0.5 text-[10px] font-semibold tabular text-ink-primary">{value}</div>
   </div>
 )
 
 const CombinedCountdown = ({ agg }: { agg: AggregateStatus }) => {
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 1000)
-    return () => clearInterval(id)
-  }, [])
+  const now = useNow() // re-renders every second
 
   if (!agg.nextDueDate) {
     return (
-      <div className="text-sm text-ink-tertiary">No upcoming payments. Every tranche is fully paid.</div>
+      <div className="text-xs text-ink-tertiary">No upcoming payments. Every tranche is fully settled.</div>
     )
   }
 
-  // Countdown is to midnight IST on the due date (bank's processing boundary)
+  // Countdown is to local midnight on the due date.
   const dueDate = zoneMidnight(agg.nextDueDate)
-  const totalSec = Math.max(0, differenceInSeconds(dueDate, new Date()))
+  const totalSec = Math.max(0, differenceInSeconds(dueDate, now))
   const days = Math.floor(totalSec / 86400)
   const hours = Math.floor((totalSec % 86400) / 3600)
   const minutes = Math.floor((totalSec % 3600) / 60)
   const seconds = totalSec % 60
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1fr]">
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-ink-tertiary">
-          <CalendarClock size={12} className="text-accent-emerald" />
-          Due {fmtDateLong(agg.nextDueDate)}
-        </div>
-        <div className="font-display text-[44px] font-semibold leading-none tabular gradient-text-emerald">
+        <div className="etch">Due {fmtDateLong(agg.nextDueDate)}</div>
+        <div className="display-num font-display text-[40px] font-medium leading-none tabular text-gold">
           {formatINR(agg.nextDueTotal)}
         </div>
-        <div className="text-sm text-ink-secondary">
+        <div className="text-[11px] text-ink-secondary">
           Combined total across {agg.nextDueRows.length} tranche
           {agg.nextDueRows.length === 1 ? '' : 's'}
         </div>
 
-        <div className="mt-2 space-y-1.5 border-t border-white/[0.05] pt-3">
-          {agg.nextDueRows.map((row) => {
-            const COLORS = { violet: 'bg-accent-violet', cyan: 'bg-accent-cyan', emerald: 'bg-accent-emerald', pink: 'bg-accent-pink' } as const
-            return (
-              <div
-                key={row.disbursement.applicationNumber}
-                className="flex items-center justify-between text-[12px]"
-              >
-                <span className="flex items-center gap-2">
-                  <span className={`h-1.5 w-1.5 rounded-full ${COLORS[row.disbursement.color as keyof typeof COLORS]}`} />
-                  <span className="font-mono text-ink-secondary">
-                    {row.disbursement.applicationNumber}
-                  </span>
-                  <span className="text-ink-tertiary">· {row.disbursement.shortName}</span>
-                </span>
-                <span className="font-medium tabular text-ink-primary">
-                  {formatINR(row.payment.paymentDue)}
-                </span>
-              </div>
-            )
-          })}
+        <div className="mt-2 space-y-1.5 border-t border-line pt-3">
+          {agg.nextDueRows.map((row) => (
+            <div key={row.disbursement.applicationNumber} className="flex items-center justify-between text-[11px]">
+              <span className="flex items-center gap-2">
+                <InkSwatch color={TRANCHE_VAR[row.disbursement.color]} className="!h-1.5 !w-1.5" />
+                <span className="tracking-[0.06em] text-ink-secondary">{row.disbursement.applicationNumber}</span>
+                <span className="text-ink-tertiary">· {row.disbursement.shortName}</span>
+              </span>
+              <span className="font-semibold tabular text-ink-primary">{formatINR(row.payment.paymentDue)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-2 self-center">
-        <Bit n={days} label="days" />
-        <Bit n={hours} label="hours" />
-        <Bit n={minutes} label="mins" />
-        <Bit n={seconds} label="secs" />
+        <FlapCell n={days} label="days" />
+        <FlapCell n={hours} label="hours" />
+        <FlapCell n={minutes} label="mins" />
+        <FlapCell n={seconds} label="secs" hot />
       </div>
     </div>
   )
 }
 
-const Bit = ({ n, label }: { n: number; label: string }) => (
-  <div className="rounded-xl border border-white/[0.06] bg-bg-elevated/40 px-2 py-3 text-center">
-    <div className="font-display text-[34px] font-semibold leading-none tabular">
-      {String(n).padStart(2, '0')}
+/** Split-flap cell - two rolling wheels with the flap hinge across the middle. */
+const FlapCell = ({ n, label, hot = false }: { n: number; label: string; hot?: boolean }) => {
+  const [a, b] = String(Math.min(99, n)).padStart(2, '0').split('')
+  return (
+    <div className="relative border border-line bg-bg-base px-1 py-3 text-center">
+      <div
+        className={clsx(
+          'relative mx-auto flex w-fit items-baseline text-[32px] font-semibold leading-none tabular md:text-[38px]',
+          hot ? 'text-vermillion' : 'text-ink-primary',
+        )}
+      >
+        <RollingDigit ch={a} direction="down" duration={380} />
+        <RollingDigit ch={b} direction="down" duration={380} />
+      </div>
+      {/* flap hinge */}
+      <span aria-hidden className="pointer-events-none absolute left-2 right-2 top-1/2 h-px -translate-y-1/2 bg-line" />
+      <div className="mt-2 text-[8px] uppercase tracking-[0.2em] text-ink-tertiary">{label}</div>
     </div>
-    <div className="mt-1 text-[9px] uppercase tracking-[0.14em] text-ink-tertiary">{label}</div>
-  </div>
-)
+  )
+}
 
-const DayHeartbeat = ({ dailyInterest }: { dailyInterest: number }) => {
-  const [now, setNow] = useState(new Date())
-  useEffect(() => {
-    // tick every 30s - accrual integer doesn't change much faster than that
-    const id = setInterval(() => setNow(new Date()), 30000)
-    return () => clearInterval(id)
-  }, [])
-  // Day-elapsed calculation is local-timezone based — heartbeat fills from
-  // the viewer's local midnight to the next.
+const DayMeter = ({ dailyInterest }: { dailyInterest: number }) => {
+  const now = useNow()
+  // Day-elapsed is local-timezone based - the meter fills from the viewer's
+  // local midnight to the next.
   const c = clockInZone(undefined, now)
-  const totalSecondsInDay = 86400
   const elapsedSec = c.hour * 3600 + c.minute * 60 + c.second
-  const pct = (elapsedSec / totalSecondsInDay) * 100
-  const accrued = (dailyInterest * elapsedSec) / totalSecondsInDay
-  const elapsedHours = c.hour
+  const pct = (elapsedSec / 86400) * 100
+  const accrued = (dailyInterest * elapsedSec) / 86400
 
   return (
     <div>
-      <div className="relative h-3 overflow-hidden rounded-full bg-bg-elevated/70 ring-1 ring-white/5">
-        <motion.div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent-emerald via-accent-cyan to-brand-300"
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+      {/* graduated meter - hour ticks, fill, needle */}
+      <div className="relative h-10 border border-line bg-bg-base">
+        <div
+          className="absolute bottom-0 left-0 top-0 bg-gold/15"
+          style={{ width: `${pct}%`, transition: 'width 1s linear' }}
         />
+        {Array.from({ length: 25 }).map((_, h) => {
+          const major = h % 6 === 0
+          return (
+            <span
+              key={h}
+              aria-hidden
+              className={clsx('absolute bottom-0 w-px', major ? 'bg-line-strong' : 'bg-line')}
+              style={{ left: `${(h / 24) * 100}%`, height: major ? '100%' : '38%' }}
+            />
+          )
+        })}
+        <span
+          aria-hidden
+          className="absolute bottom-0 top-0 w-[2px] bg-vermillion"
+          style={{ left: `${pct}%`, transition: 'left 1s linear' }}
+        />
+        {/* hour figures */}
+        {[0, 6, 12, 18, 24].map((h) => (
+          <span
+            key={h}
+            className="absolute top-full mt-1 -translate-x-1/2 text-[8px] tabular tracking-[0.12em] text-ink-muted"
+            style={{ left: `${(h / 24) * 100}%` }}
+          >
+            {String(h).padStart(2, '0')}
+          </span>
+        ))}
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
-        <Block label="Elapsed today" value={`${elapsedHours} h`} hint={`${pct.toFixed(1)}% of today`} />
-        <Block label="Accrued today" value={formatINR(accrued)} hint={`of ${formatINR(dailyInterest)} daily`} />
-        <Block
+
+      <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <MeterBlock label="Elapsed today" value={`${c.hour} h ${c.minute} m`} hint={`${pct.toFixed(1)}% of today`} />
+        <MeterBlock
+          label="Accrued today"
+          value={formatINRPrecise(accrued)}
+          hint={`of ${formatINR(dailyInterest)} daily`}
+          hot
+        />
+        <MeterBlock
           label="Remaining today"
           value={formatINR(Math.max(0, dailyInterest - accrued))}
-          hint={`${24 - elapsedHours} h left`}
+          hint={`${23 - c.hour} h ${60 - c.minute} m left`}
         />
       </div>
     </div>
   )
 }
 
-const Block = ({ label, value, hint }: { label: string; value: string; hint: string }) => (
-  <div className="rounded-xl border border-white/[0.06] bg-bg-elevated/40 p-3">
-    <div className="text-[11px] uppercase tracking-[0.12em] text-ink-tertiary">{label}</div>
-    <div className="mt-1 font-display text-lg font-semibold tabular">{value}</div>
-    <div className="text-[10px] text-ink-tertiary">{hint}</div>
+const MeterBlock = ({
+  label,
+  value,
+  hint,
+  hot = false,
+}: {
+  label: string
+  value: string
+  hint: string
+  hot?: boolean
+}) => (
+  <div className="border border-line bg-bg-base p-3.5">
+    <div className="etch !text-[9px]">{label}</div>
+    <div className={clsx('mt-1.5 text-base font-semibold tabular', hot ? 'text-vermillion' : 'text-ink-primary')}>
+      {value}
+    </div>
+    <div className="mt-0.5 text-[10px] text-ink-tertiary">{hint}</div>
   </div>
 )
 

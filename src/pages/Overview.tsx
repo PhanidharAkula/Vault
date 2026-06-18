@@ -1,22 +1,14 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Banknote,
-  CalendarClock,
-  Coins,
-  Flame,
-  Layers,
-  Receipt,
-  TrendingUp,
-} from 'lucide-react'
 import { LiveOutstandingHero } from '../components/LiveOutstandingHero'
 import { OutstandingTimeline } from '../components/charts/OutstandingTimeline'
 import { DisbursementCard } from '../components/DisbursementCard'
-import { GlassCard, Pill, SectionTitle } from '../components/ui/GlassCard'
+import { Plate, SectionTitle, Tag, InkSwatch } from '../components/ui/Plate'
 import { StatCard } from '../components/ui/StatCard'
 import { DrawBar } from '../components/ui/DrawBar'
+import { TapeTimeline } from '../components/ui/TapeTimeline'
 import { computeAggregate } from '../lib/calculations'
-import { DISBURSEMENTS, MASTER } from '../data/loanData'
+import { DISBURSEMENTS, MASTER, TRANCHE_VAR } from '../data/loanData'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
 import { fmtDateLong, formatRelative, tenureToYM, monthsBetween } from '../lib/dates'
 import { useTodayIso } from '../state/today'
@@ -24,7 +16,7 @@ import { useCurrency } from '../state/currency'
 
 const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => void }) => {
   const todayIso = useTodayIso()
-  useCurrency() // subscribe so the currency toggle triggers a re-render of all formatINR calls
+  useCurrency() // subscribe so the currency toggle re-renders all formatINR calls
 
   const agg = useMemo(() => computeAggregate(todayIso), [todayIso])
 
@@ -38,61 +30,65 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
   const nextPrincipalSum = agg.nextDueRows.reduce((s, x) => s + x.payment.principal, 0)
   const nextOutstandingAfter = agg.nextDueRows.reduce((s, x) => s + x.payment.totalOutstanding, 0)
 
-  // Combined monthly EMI across all tranches (each tranche contributes its
-  // first EMI row's paymentDue). Computed from the schedule so it stays in
-  // sync as new tranches are added.
+  // Combined monthly EMI across all tranches.
   const combinedEmi = DISBURSEMENTS.reduce(
     (s, d) => s + (d.emiStartIndex >= 0 ? d.schedule[d.emiStartIndex].paymentDue : 0),
     0,
   )
 
-  // Earliest date any tranche transitions into EMI (where principal repayment
-  // begins). Pulled from the schedule rather than hardcoded.
+  // Earliest date any tranche transitions into EMI.
   const emiStarts = DISBURSEMENTS.map((d) => d.emiStartDate).filter(Boolean) as string[]
   const fullEmiStartDate = emiStarts.sort()[0] ?? MASTER.finalMaturity
 
   return (
     <div className="space-y-6">
-      {/* Heading row */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      {/* Heading plate */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <Pill tone="violet">Education loan</Pill>
-            <Pill>{DISBURSEMENTS.length} disbursements</Pill>
-            <Pill tone="emerald">on schedule</Pill>
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag tone="gold">Plate 01</Tag>
+            <Tag>Education loan</Tag>
+            <Tag tone="sage">on schedule</Tag>
           </div>
-          <h1 className="mt-3 font-display text-2xl font-semibold leading-tight tracking-tight md:text-[34px]">
-            Welcome back, <span className="gradient-text-brand">{MASTER.applicantName.split(' ')[0]}</span>
+          <h1 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight md:text-[40px]">
+            Master ledger<span className="text-vermillion">.</span>
           </h1>
-          <p className="mt-1 text-sm text-ink-secondary">
-            Live state of loan{' '}
-            <span className="font-mono text-ink-primary">{MASTER.applicationNumber}</span>. Every metric
-            updates as time passes.
+          <p className="mt-1.5 text-xs text-ink-secondary">
+            Good day, {MASTER.applicantName.split(' ')[0]} - the live state of loan{' '}
+            <span className="text-ink-primary">№ {MASTER.applicationNumber}</span>. Every figure rolls
+            forward with time.
           </p>
         </div>
         <div className="text-left sm:text-right">
-          <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-tertiary">
-            Final maturity
-          </div>
-          <div className="font-display text-lg font-semibold">{fmtDateLong(MASTER.finalMaturity)}</div>
-          <div className="text-xs text-ink-tertiary">
+          <div className="etch">Final maturity</div>
+          <div className="mt-1 font-display text-lg font-medium">{fmtDateLong(MASTER.finalMaturity)}</div>
+          <div className="text-[10px] tracking-[0.08em] text-ink-tertiary">
             {tenureToYM(monthsToFinal)} remaining
           </div>
         </div>
       </div>
 
-      {/* Hero */}
+      {/* Hero counter */}
       <LiveOutstandingHero />
 
-      {/* KPI strip - tighter than 3-up at md (820px iPad portrait) makes the
-          values overflow ('L' suffix wraps), so we hold 2-up until lg+. */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      {/* The full term, as a measuring tape */}
+      <Plate pad="lg">
+        <SectionTitle
+          fig="01"
+          eyebrow="The full term"
+          title="Fourteen years on one tape"
+          description="Every disbursement, rate revision and milestone from first drawdown to final settlement."
+        />
+        <TapeTimeline todayIso={todayIso} />
+      </Plate>
+
+      {/* KPI strip - 2-up until lg (values overflow at md), then 3/6-up. */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Disbursed"
           value={agg.totalDisbursed}
           format={formatINRCompact}
-          tone="violet"
-          icon={<Banknote size={16} />}
+          tone="gold"
           hint={`across ${DISBURSEMENTS.length} tranches`}
           index={0}
         />
@@ -100,8 +96,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           label="Principal paid"
           value={agg.totalPrincipalPaid}
           format={formatINRCompact}
-          tone="emerald"
-          icon={<Receipt size={16} />}
+          tone="sage"
           hint={
             agg.totalPrincipalPaid > 0
               ? `${agg.totalPaid > 0 ? `${formatINRCompact(agg.totalPaid)} cash out` : ''}`
@@ -113,8 +108,7 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           label="Interest paid"
           value={agg.totalInterestPaid}
           format={formatINRCompact}
-          tone="rose"
-          icon={<Flame size={16} />}
+          tone="vermillion"
           hint={`+${formatINRCompact(agg.totalInterestAccrued)} accrued`}
           index={2}
         />
@@ -122,18 +116,16 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           label="Daily interest"
           value={agg.totalDailyInterest}
           format={(n) => formatINR(n)}
-          tone="amber"
-          icon={<TrendingUp size={16} />}
+          tone="vermillion"
           hint="at today's outstanding"
           index={3}
         />
         <StatCard
-          label="ROI"
+          label="Weighted rate"
           value={agg.weightedAverageRate}
           format={(n) => formatPercent(n, 2)}
-          tone="cyan"
-          icon={<Coins size={16} />}
-          hint="weighted rate of interest"
+          tone="cerulean"
+          hint="across live balances"
           index={4}
         />
         <StatCard
@@ -141,142 +133,112 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           value={agg.totalRemainingPayments}
           format={(n) => `${Math.round(n)}`}
           tone="default"
-          icon={<CalendarClock size={16} />}
           hint={`of ${agg.totalPlannedPayments} payments`}
           index={5}
         />
       </div>
 
-      {/* Timeline + Next payment */}
+      {/* Timeline + due notice */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.7fr_1fr]">
-        <GlassCard pad="lg">
+        <Plate pad="lg">
           <SectionTitle
+            fig="02"
             eyebrow="Master view"
             title="Outstanding across time"
-            description={`Stacked across all ${DISBURSEMENTS.length} disbursements. Pink dot is today; coloured ticks are interest-rate changes.`}
+            description={`Stacked across all ${DISBURSEMENTS.length} disbursements. The vermillion needle is today; small ticks mark rate revisions.`}
           />
           <OutstandingTimeline todayIso={todayIso} />
-        </GlassCard>
+        </Plate>
 
-        {/* Next payment + at-a-glance */}
         <div className="space-y-4">
+          {/* DUE NOTICE - the payment stub */}
           {agg.nextDueDate && (
-            <GlassCard pad="lg" tone="emerald">
-              <div className="flex items-center justify-between">
-                <Pill tone="emerald">Next due · combined</Pill>
-                <span className="text-[11px] text-ink-tertiary">
+            <Plate pad="lg" tone="gold" className="overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <Tag tone="gold">Due notice · combined</Tag>
+                <span className="text-[10px] tracking-[0.08em] text-ink-tertiary">
                   {formatRelative(agg.nextDueDate, todayIso)}
                 </span>
               </div>
-              <div className="mt-3 font-display text-3xl font-semibold leading-none tabular gradient-text-emerald md:text-[44px]">
+              <div className="display-num mt-4 font-display text-[34px] font-medium leading-none text-gold md:text-[42px]">
                 {formatINR(agg.nextDueTotal)}
               </div>
-              <div className="mt-1 text-sm text-ink-secondary">
+              <div className="mt-1.5 text-[11px] text-ink-secondary">
                 {fmtDateLong(agg.nextDueDate)} · {agg.nextDueRows.length} tranche
                 {agg.nextDueRows.length === 1 ? '' : 's'}
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-ink-tertiary">
-                <div className="rounded-lg border border-white/[0.06] bg-bg-elevated/50 p-2">
-                  <div className="uppercase tracking-[0.12em]">Interest</div>
-                  <div className="mt-0.5 font-medium text-ink-primary tabular">
-                    {formatINRCompact(nextInterestSum)}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-white/[0.06] bg-bg-elevated/50 p-2">
-                  <div className="uppercase tracking-[0.12em]">Principal</div>
-                  <div className="mt-0.5 font-medium text-ink-primary tabular">
-                    {formatINRCompact(nextPrincipalSum)}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-white/[0.06] bg-bg-elevated/50 p-2">
-                  <div className="uppercase tracking-[0.12em]">Total after</div>
-                  <div className="mt-0.5 font-medium text-ink-primary tabular">
-                    {formatINRCompact(nextOutstandingAfter)}
-                  </div>
-                </div>
+
+              {/* perforation */}
+              <div className="relative -mx-6 my-4">
+                <div className="border-t border-dashed border-line-strong" />
+                <span aria-hidden className="absolute -left-[7px] -top-[7px] h-[14px] w-[14px] rounded-full border border-line bg-bg-base" />
+                <span aria-hidden className="absolute -right-[7px] -top-[7px] h-[14px] w-[14px] rounded-full border border-line bg-bg-base" />
               </div>
-              <div className="mt-4 border-t border-white/[0.05] pt-3">
-                <div className="text-[10px] uppercase tracking-[0.14em] text-ink-tertiary">
-                  Per tranche
-                </div>
+
+              {/* counterfoil */}
+              <div className="grid grid-cols-3 gap-2">
+                <StubCell label="Interest" value={formatINRCompact(nextInterestSum)} tone="text-vermillion" />
+                <StubCell label="Principal" value={formatINRCompact(nextPrincipalSum)} tone="text-sage" />
+                <StubCell label="Balance after" value={formatINRCompact(nextOutstandingAfter)} tone="text-ink-primary" />
+              </div>
+              <div className="mt-4 border-t border-line pt-3">
+                <div className="etch !text-[9px]">Per tranche</div>
                 <div className="mt-2 space-y-1.5">
                   {agg.nextDueRows.map((row) => (
                     <div
                       key={row.disbursement.applicationNumber}
-                      className="flex items-center justify-between text-[12px]"
+                      className="flex items-center justify-between text-[11px]"
                     >
                       <span className="flex items-center gap-2">
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            row.disbursement.color === 'violet'
-                              ? 'bg-accent-violet'
-                              : row.disbursement.color === 'cyan'
-                                ? 'bg-accent-cyan'
-                                : row.disbursement.color === 'emerald'
-                                  ? 'bg-accent-emerald'
-                                  : 'bg-accent-pink'
-                          }`}
-                        />
-                        <span className="font-mono text-ink-secondary">
+                        <InkSwatch color={TRANCHE_VAR[row.disbursement.color]} className="!h-1.5 !w-1.5" />
+                        <span className="tracking-[0.06em] text-ink-secondary">
                           {row.disbursement.applicationNumber}
                         </span>
                       </span>
-                      <span className="font-medium tabular text-ink-primary">
+                      <span className="font-semibold tabular text-ink-primary">
                         {formatINR(row.payment.paymentDue)}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
-            </GlassCard>
+            </Plate>
           )}
 
-          <GlassCard pad="lg" tone="violet">
-            <Pill tone="violet">Lifetime cost</Pill>
-            <div className="mt-3">
-              <div className="font-display text-3xl font-semibold tabular gradient-text-brand">
+          {/* Lifetime cost */}
+          <Plate pad="lg">
+            <Tag tone="plum">Lifetime cost</Tag>
+            <div className="mt-3.5">
+              <div className="display-num font-display text-[30px] font-medium leading-none text-ink-primary">
                 {formatINRCompact(totalCostOfLoan)}
               </div>
-              <div className="mt-1 text-sm text-ink-secondary">
+              <div className="mt-1.5 text-[11px] text-ink-secondary">
                 Total payments planned over the loan lifetime
               </div>
             </div>
-            <div className="mt-4 space-y-2">
-              {/* Principal disbursed (₹55L) + Interest cost (₹73.56L) = lifetime
-                  payment (₹1.29 Cr). Using `totalDisbursed` here instead of the
-                  `principal` column sum, because that column also includes the
-                  pre-EMI accrued interest (≈₹17L) that gets repaid via EMI
-                  principal - counting it again under Principal would double up. */}
-              <SplitBar
-                label="Principal"
-                value={agg.totalDisbursed}
-                total={totalCostOfLoan}
-                color="emerald"
-              />
-              <SplitBar
-                label="Interest"
-                value={agg.totalPlannedInterest}
-                total={totalCostOfLoan}
-                color="rose"
-              />
+            <div className="mt-4 space-y-2.5">
+              {/* Principal disbursed + interest cost = lifetime payment. Uses
+                  `totalDisbursed` (not the principal column sum, which would
+                  double-count pre-EMI accrued interest repaid via EMI). */}
+              <SplitBar label="Principal" value={agg.totalDisbursed} total={totalCostOfLoan} color="rgb(var(--c-sage))" />
+              <SplitBar label="Interest" value={agg.totalPlannedInterest} total={totalCostOfLoan} color="rgb(var(--c-vermillion))" />
             </div>
-            <div className="mt-3 text-[11px] text-ink-tertiary">
+            <div className="mt-3.5 border-t border-line pt-3 text-[10px] leading-relaxed text-ink-tertiary">
               {interestShare.toFixed(1)}% of every rupee paid is interest.
             </div>
-          </GlassCard>
+          </Plate>
         </div>
       </div>
 
-      {/* Disbursement cards */}
+      {/* Tranche dossiers */}
       <div>
         <SectionTitle
+          fig="03"
           eyebrow="Per disbursement"
-          title="Tranche performance"
-          description="Open any tranche for its full schedule, rate moves, and projection."
+          title="The tranche files"
+          description="Open any dossier for its full schedule, rate moves, and projection."
           right={
-            <div className="hidden items-center gap-2 text-[11px] text-ink-tertiary md:flex">
-              <Layers size={14} /> {DISBURSEMENTS.length} disbursements active
-            </div>
+            <div className="etch hidden md:block">{DISBURSEMENTS.length} files active</div>
           }
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -286,35 +248,44 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
         </div>
       </div>
 
-      {/* Insights ribbon */}
+      {/* Marginalia */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-1 gap-4 md:grid-cols-3"
       >
-        <Insight
-          eyebrow="Cost ratio"
-          title={formatINRCompact(agg.totalPlannedInterest)}
-          subtitle="lifetime interest"
-          body={`Roughly ${(agg.totalPlannedInterest / agg.totalDisbursed * 100).toFixed(0)}% of the principal disbursed.`}
-        />
-        <Insight
-          eyebrow="EMI horizon"
-          title={fmtDateLong(fullEmiStartDate)}
-          subtitle="full EMI begins"
-          body={`From this date, the combined monthly EMI across all ${DISBURSEMENTS.length} tranches will be ${formatINRCompact(combinedEmi)} - when principal repayment kicks in.`}
-        />
-        <Insight
-          eyebrow="Burn rate"
-          title={formatINR(Math.round(agg.totalDailyInterest * 30))}
-          subtitle="interest / month"
-          body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day.`}
-        />
+        <div className="etch mb-3">Marginalia</div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Note
+            index="i"
+            title={formatINRCompact(agg.totalPlannedInterest)}
+            subtitle="lifetime interest"
+            body={`Roughly ${((agg.totalPlannedInterest / agg.totalDisbursed) * 100).toFixed(0)}% of the principal disbursed - the price of time itself.`}
+          />
+          <Note
+            index="ii"
+            title={fmtDateLong(fullEmiStartDate)}
+            subtitle="full EMI begins"
+            body={`From this date the combined monthly EMI across all ${DISBURSEMENTS.length} tranches is ${formatINRCompact(combinedEmi)} - principal repayment finally kicks in.`}
+          />
+          <Note
+            index="iii"
+            title={formatINR(Math.round(agg.totalDailyInterest * 30))}
+            subtitle="interest / month"
+            body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day, every day, including today.`}
+          />
+        </div>
       </motion.div>
     </div>
   )
 }
+
+const StubCell = ({ label, value, tone }: { label: string; value: string; tone: string }) => (
+  <div className="border border-line bg-bg-base p-2">
+    <div className="text-[8px] uppercase tracking-[0.18em] text-ink-tertiary">{label}</div>
+    <div className={`mt-1 text-[11px] font-semibold tabular ${tone}`}>{value}</div>
+  </div>
+)
 
 const SplitBar = ({
   label,
@@ -325,45 +296,43 @@ const SplitBar = ({
   label: string
   value: number
   total: number
-  color: 'emerald' | 'rose'
+  color: string
 }) => {
   const pct = (value / total) * 100
-  const bg = color === 'emerald' ? 'bg-accent-emerald' : 'bg-accent-rose'
   return (
     <div>
-      <div className="flex items-center justify-between text-[11px]">
-        <span className="text-ink-tertiary">{label}</span>
+      <div className="flex items-center justify-between text-[10px]">
+        <span className="uppercase tracking-[0.14em] text-ink-tertiary">{label}</span>
         <span className="font-medium tabular text-ink-primary">
           {formatINR(value)} <span className="text-ink-tertiary">· {pct.toFixed(1)}%</span>
         </span>
       </div>
-      <div className="mt-1">
-        <DrawBar pct={pct} fillClassName={bg} trackClassName="bg-bg-elevated" height={6} />
+      <div className="mt-1.5">
+        <DrawBar pct={pct} fillStyle={{ background: color }} height={6} />
       </div>
     </div>
   )
 }
 
-const Insight = ({
-  eyebrow,
+const Note = ({
+  index,
   title,
   subtitle,
   body,
 }: {
-  eyebrow: string
+  index: string
   title: string
   subtitle: string
   body: string
 }) => (
-  <div className="glass relative overflow-hidden rounded-2xl p-5">
-    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-tertiary">
-      {eyebrow}
-    </div>
-    <div className="mt-2 font-display text-2xl font-semibold tabular gradient-text-brand">
+  <div className="relative border-l border-line-strong py-1 pl-5">
+    <span className="absolute -left-px top-1 h-7 w-px bg-gold" aria-hidden />
+    <div className="font-display text-sm italic text-gold">{index}.</div>
+    <div className="display-num mt-1.5 font-display text-2xl font-medium tracking-tight text-ink-primary">
       {title}
     </div>
-    <div className="text-[11px] uppercase tracking-[0.14em] text-ink-tertiary">{subtitle}</div>
-    <div className="mt-3 text-[13px] leading-relaxed text-ink-secondary">{body}</div>
+    <div className="etch mt-0.5 !text-[9px]">{subtitle}</div>
+    <p className="mt-2.5 text-[11px] leading-relaxed text-ink-secondary">{body}</p>
   </div>
 )
 

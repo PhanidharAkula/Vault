@@ -16,25 +16,21 @@ type Props = {
   duration?: number
   /** Animation delay in ms (default 0). */
   delay?: number
-  /** Optional rounding class on the track. */
-  rounded?: string
 }
 
 /**
- * A horizontal progress bar that always animates from 0 → pct on mount,
+ * A horizontal fill bar that always animates from 0 → pct on mount,
  * regardless of any framer-motion `initial={false}` propagation higher up
- * the tree.  Drives the width via React state + a CSS transition, which
- * isn't affected by framer-motion's variant inheritance.
+ * the tree. Square-cornered and hairline-framed, like a ledger column.
  */
 export const DrawBar = ({
   pct,
   fillClassName,
   fillStyle,
   height = 6,
-  trackClassName = 'bg-white/[0.04]',
+  trackClassName = 'bg-bg-base',
   duration = 1000,
   delay = 0,
-  rounded = 'rounded-full',
 }: Props) => {
   const [drawn, setDrawn] = useState(false)
   useEffect(() => {
@@ -50,15 +46,11 @@ export const DrawBar = ({
   const target = Math.max(0, Math.min(100, pct))
   return (
     <div
-      className={clsx(
-        'relative w-full overflow-hidden ring-1 ring-white/5',
-        rounded,
-        trackClassName,
-      )}
+      className={clsx('relative w-full overflow-hidden border border-line', trackClassName)}
       style={{ height }}
     >
       <div
-        className={clsx('h-full', rounded, fillClassName)}
+        className={clsx('h-full', fillClassName)}
         style={{
           width: `${drawn ? target : 0}%`,
           transition: `width ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
