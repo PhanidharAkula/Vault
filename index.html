@@ -21,16 +21,17 @@
       name="description"
       content="An engraved banking instrument that tracks a multi-tranche education loan end to end: live outstanding, amortization schedule, rate history, and analytics."
     />
-    <!-- Social preview (Open Graph + Twitter). `og.png` is 1200x630 and resolves
-         relative to the page URL; swap in an absolute URL once the deploy domain
-         is fixed for the widest crawler support. -->
+    <!-- Social preview (Open Graph + Twitter). Most crawlers require an ABSOLUTE
+         og:image URL, so this points at the GitHub Pages project URL. If you
+         move to a custom domain, update both image URLs to match. -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://phanidharakula.github.io/Vault/" />
     <meta property="og:title" content="Vault - Private Loan Ledger" />
     <meta
       property="og:description"
       content="An engraved banking instrument that tracks a multi-tranche education loan end to end."
     />
-    <meta property="og:image" content="og.png" />
+    <meta property="og:image" content="https://phanidharakula.github.io/Vault/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Vault - a private loan ledger" />
@@ -40,7 +41,7 @@
       name="twitter:description"
       content="An engraved banking instrument that tracks a multi-tranche education loan end to end."
     />
-    <meta name="twitter:image" content="og.png" />
+    <meta name="twitter:image" content="https://phanidharakula.github.io/Vault/og.png" />
     <script>
       // Read persisted theme + currency before React boots. URL params override
       // localStorage (handy for sharing a screenshot or testing).

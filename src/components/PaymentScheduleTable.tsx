@@ -70,6 +70,7 @@ export const PaymentScheduleTable = ({
         <div className="seg h-9 w-full min-w-0 sm:w-auto">
           {(['all', 'past', 'future', 'pre-emi', 'emi'] as Filter[]).map((f) => (
             <button
+              type="button"
               key={f}
               data-on={filter === f}
               onClick={() => {
@@ -193,6 +194,7 @@ export const PaymentScheduleTable = ({
         </div>
         <div className="flex items-center gap-1.5">
           <button
+            type="button"
             disabled={safePage === 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             aria-label="Previous folio"
@@ -201,6 +203,7 @@ export const PaymentScheduleTable = ({
             <ChevronLeft size={16} />
           </button>
           <button
+            type="button"
             disabled={safePage >= totalPages - 1}
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             aria-label="Next folio"

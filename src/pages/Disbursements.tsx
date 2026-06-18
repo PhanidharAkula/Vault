@@ -77,6 +77,7 @@ const Disbursements = ({
           const itemInk = TRANCHE_VAR[item.color]
           return (
             <button
+              type="button"
               key={item.applicationNumber}
               onClick={() => setActiveIdx(i)}
               className={clsx(

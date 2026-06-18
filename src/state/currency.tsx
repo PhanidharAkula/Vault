@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { FALLBACK_INR_PER_USD, FX_ENDPOINT } from '../lib/fx'
 
 // All loan calculations live in INR (where the loan was taken). USD is purely a
 // display preference - the formatINR / formatINRCompact helpers convert at the
@@ -8,16 +9,7 @@ import type { ReactNode } from 'react'
 
 export type Currency = 'INR' | 'USD'
 
-// Fallback rate. Only shown for the ~200ms window between first paint and the
-// live FX response, OR if the API call fails entirely. Tuned close to the
-// recent USD↔INR figure so the first-paint flicker (when it happens) is tiny.
-const FALLBACK_INR_PER_USD = 96
-
 const STORAGE_KEY = 'vault.currency'
-
-// Free, no-auth, CORS-enabled FX endpoint. Returns `{ rates: { INR: <number>, ... } }`.
-// Docs: https://www.exchangerate-api.com/docs/free
-const FX_ENDPOINT = 'https://open.er-api.com/v6/latest/USD'
 
 type CurrencyCtx = {
   currency: Currency

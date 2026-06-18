@@ -71,14 +71,14 @@ const Schedule = () => {
         <div className="flex flex-wrap items-center gap-2">
           <div className="seg">
             {(['date', 'tranche'] as const).map((g) => (
-              <button key={g} data-on={groupBy === g} onClick={() => setGroupBy(g)} className="seg-btn capitalize">
+              <button type="button" key={g} data-on={groupBy === g} onClick={() => setGroupBy(g)} className="seg-btn capitalize">
                 by {g}
               </button>
             ))}
           </div>
           <div className="seg">
             {(['all', 'past', 'future'] as const).map((f) => (
-              <button key={f} data-on={filter === f} onClick={() => setFilter(f)} className="seg-btn capitalize">
+              <button type="button" key={f} data-on={filter === f} onClick={() => setFilter(f)} className="seg-btn capitalize">
                 {f}
               </button>
             ))}
@@ -137,6 +137,7 @@ const Schedule = () => {
               return (
                 <div key={month} className="overflow-hidden border border-line">
                   <button
+                    type="button"
                     onClick={() => setOpenDate(open ? null : month)}
                     className={clsx(
                       'flex w-full items-center gap-4 px-4 py-3 text-left transition-colors',

@@ -14,6 +14,7 @@ import { dirname, resolve } from 'node:path'
 import puppeteer from 'puppeteer-core'
 import { computeAggregate } from '../src/lib/calculations'
 import { todayInZone } from '../src/lib/timezone'
+import { FALLBACK_INR_PER_USD, FX_ENDPOINT } from '../src/lib/fx'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = resolve(__dirname, '../public/og.png')
@@ -41,9 +42,7 @@ const inrOutstanding = computeAggregate(today).totalCurrentOutstanding
 // the app's static rate (FALLBACK_INR_PER_USD) when the network is unavailable.
 const fetchInrPerUsd = async (): Promise<number> => {
   try {
-    const res = await fetch('https://open.er-api.com/v6/latest/USD', {
-      signal: AbortSignal.timeout(8000),
-    })
+    const res = await fetch(FX_ENDPOINT, { signal: AbortSignal.timeout(8000) })
     if (res.ok) {
       const data = (await res.json()) as { rates?: { INR?: number } }
       const inr = data?.rates?.INR
@@ -52,7 +51,7 @@ const fetchInrPerUsd = async (): Promise<number> => {
   } catch {
     /* offline - fall through to the static rate */
   }
-  return 96
+  return FALLBACK_INR_PER_USD
 }
 const inrPerUsd = await fetchInrPerUsd()
 const figure =
@@ -143,9 +142,12 @@ try {
   await page.setViewport({ width: 1200, height: 630, deviceScaleFactor: 1 })
   await page.setContent(html, { waitUntil: 'load', timeout: 30000 })
   // Wait for the web fonts to load and apply before snapping (preconnect-style
-  // networkidle never settles, so gate on document.fonts instead).
+  // networkidle never settles, so gate on document.fonts instead). Capped at 5s
+  // so a slow/unreachable font CDN can't hang the build - worst case the card
+  // renders in the fallback serif/mono rather than blocking the deploy.
   await page.evaluate(async () => {
-    await (document as Document & { fonts: FontFaceSet }).fonts.ready
+    const fonts = (document as Document & { fonts: FontFaceSet }).fonts.ready
+    await Promise.race([fonts, new Promise((r) => setTimeout(r, 5000))])
   })
   await new Promise((r) => setTimeout(r, 250))
   await page.screenshot({ path: OUT, clip: { x: 0, y: 0, width: 1200, height: 630 } })

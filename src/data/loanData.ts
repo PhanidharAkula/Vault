@@ -61,7 +61,7 @@ const buildView = (d: Disbursement, idx: number): DisbursementView => {
     ...d,
     shortName,
     label,
-    color: COLORS[idx] ?? 'violet',
+    color: COLORS[idx % COLORS.length],
     rateChanges,
     emiStartIndex,
     emiStartDate,

@@ -61,12 +61,18 @@ const Sidebar = ({
   onNavigate: (k: RouteKey) => void
   /** Drawer state for mobile (`< md`). Ignored on `md+` where the rail is permanent. */
   drawerOpen?: boolean
-  /** Reserved - drawer is closed by route changes (handled in App.tsx) and by tapping the backdrop. */
-  onCloseDrawer?: () => void
 }) => {
   const isDesktop = useIsDesktop()
+  // Below md the rail is an off-screen drawer when closed; mark it inert so it
+  // can't be tab-focused or announced by assistive tech while hidden. On md+
+  // it's permanent, so never inert.
+  const offscreen = !isDesktop && !drawerOpen
   return (
     <aside
+      id="primary-rail"
+      aria-label="Primary navigation"
+      inert={offscreen}
+      aria-hidden={offscreen || undefined}
       className={clsx(
         // `h-screen` (a fixed 100vh) keeps the rail height scroll-independent -
         // `100dvh` shifts as Safari's address bar hides/shows while scrolling,
@@ -122,6 +128,7 @@ const Sidebar = ({
           const active = route === item.key
           return (
             <button
+              type="button"
               key={item.key}
               onClick={() => onNavigate(item.key)}
               className={clsx(

@@ -35,7 +35,7 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
         <div className="etch">Outstanding · past, present &amp; future</div>
         <div className="seg w-fit">
           {(['stacked', 'total'] as const).map((m) => (
-            <button key={m} data-on={mode === m} onClick={() => setMode(m)} className="seg-btn capitalize">
+            <button type="button" key={m} data-on={mode === m} onClick={() => setMode(m)} className="seg-btn capitalize">
               {m}
             </button>
           ))}

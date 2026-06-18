@@ -42,7 +42,10 @@ jobs:
       # Recompute today's outstanding and re-render public/og.png so the social
       # card stays current. Uses the runner's pre-installed Chrome. TZ sets the
       # day boundary (the loan's home zone); change it to match your own.
+      # Best-effort: if the render fails (Chrome/font CDN/FX blip), the deploy
+      # still ships the committed og.png rather than failing the whole run.
       - name: Generate social card
+        continue-on-error: true
         env:
           TZ: Asia/Kolkata
         run: |

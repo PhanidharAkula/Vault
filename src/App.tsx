@@ -172,6 +172,7 @@ const PageRouter = () => {
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open index"
+          aria-controls="primary-rail"
           aria-expanded={false}
           className="fixed left-4 top-4 z-50 grid h-10 w-10 place-items-center border border-line-strong bg-bg-surface/95 text-ink-primary shadow-float backdrop-blur-sm md:hidden"
         >

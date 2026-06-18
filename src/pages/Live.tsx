@@ -304,6 +304,11 @@ const DayMeter = ({ dailyInterest }: { dailyInterest: number }) => {
   const elapsedSec = c.hour * 3600 + c.minute * 60 + c.second
   const pct = (elapsedSec / 86400) * 100
   const accrued = (dailyInterest * elapsedSec) / 86400
+  // Remaining time derived from seconds so the minutes carry correctly
+  // (a naive 60 - minute renders "60 m" on the hour).
+  const remSec = 86400 - elapsedSec
+  const remH = Math.floor(remSec / 3600)
+  const remM = Math.floor((remSec % 3600) / 60)
 
   return (
     <div>
@@ -352,7 +357,7 @@ const DayMeter = ({ dailyInterest }: { dailyInterest: number }) => {
         <MeterBlock
           label="Remaining today"
           value={formatINR(Math.max(0, dailyInterest - accrued))}
-          hint={`${23 - c.hour} h ${60 - c.minute} m left`}
+          hint={`${remH} h ${remM} m left`}
         />
       </div>
     </div>
