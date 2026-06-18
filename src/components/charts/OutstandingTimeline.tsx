@@ -22,6 +22,26 @@ type Mode = 'total' | 'stacked'
 const INK = DISBURSEMENTS.map((d) => TRANCHE_VAR[d.color])
 const TODAY_INK = 'rgb(var(--c-vermillion))'
 
+// Custom Y-axis tick: a single unconstrained <text> so Recharts never wraps the
+// label. Its built-in tick hands the axis width to an inner <Text>, which can
+// over-measure a 7-glyph label like "89.39 L" before the web font loads (the
+// cached measurement then sticks) and break it onto two lines. A plain <text>
+// has no wrap width, so the label always stays on one line and the axis can stay
+// as narrow as the single-tranche chart (full-width graph). The class matches
+// the CSS that paints every tick, so it looks identical to a default tick.
+const YTick = ({ x, y, payload }: { x?: number; y?: number; payload?: { value: number } }) => (
+  <text
+    x={x}
+    y={y}
+    dy="0.32em"
+    textAnchor="end"
+    fontSize={10}
+    className="recharts-text recharts-cartesian-axis-tick-value"
+  >
+    {payload ? formatINRCompact(payload.value).replace('₹', '') : ''}
+  </text>
+)
+
 export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
   useChartTick()
   const [mode, setMode] = useState<Mode>('stacked')
@@ -60,13 +80,8 @@ export const OutstandingTimeline = ({ todayIso }: { todayIso: string }) => {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="date" tickFormatter={fmtDateShort} tick={{ fontSize: 10 }} minTickGap={42} />
             <YAxis
-              tickFormatter={(v) => formatINRCompact(v).replace('₹', '')}
-              tick={{ fontSize: 10 }}
-              /* A touch wider than the single-tranche chart: the combined total
-                 reaches 7-glyph labels ("89.39 L"), and Recharts can over-measure
-                 the width (it measures before the web font applies) and break on
-                 the space, wrapping to two lines. The extra room keeps one line. */
-              width={74}
+              tick={<YTick />}
+              width={64}
               /* Pad the top of the scale ~15% so the peak doesn't sit flush
                  against the chart's top edge. */
               domain={[0, (max: number) => max * 1.15]}
