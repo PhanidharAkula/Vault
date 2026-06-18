@@ -1,10 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Run on every push to main…
-  push:
-    branches: [main]
-  # …or whenever you trigger it manually from the Actions tab.
+  # This branch is the v1 snapshot, NOT the deploy source - the live site
+  # deploys from `release` (the default branch). There is deliberately no push
+  # trigger here, so an accidental push to main can't overwrite the deployed
+  # site. Manual dispatch is kept only as an explicit escape hatch.
   workflow_dispatch:
 
 # Pages deployment requires these specific permissions.
