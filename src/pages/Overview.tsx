@@ -8,7 +8,7 @@ import { StatCard } from '../components/ui/StatCard'
 import { DrawBar } from '../components/ui/DrawBar'
 import { TapeTimeline } from '../components/ui/TapeTimeline'
 import { computeAggregate } from '../lib/calculations'
-import { DISBURSEMENTS, MASTER, TRANCHE_VAR } from '../data/loanData'
+import { DISBURSEMENTS, MASTER, TRANCHE_VAR, findScheduleAtOrBefore } from '../data/loanData'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
 import { fmtDateLong, formatRelative, tenureToYM, monthsBetween } from '../lib/dates'
 import { useTodayIso } from '../state/today'
@@ -39,6 +39,14 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
   // Earliest date any tranche transitions into EMI.
   const emiStarts = DISBURSEMENTS.map((d) => d.emiStartDate).filter(Boolean) as string[]
   const fullEmiStartDate = emiStarts.sort()[0] ?? MASTER.finalMaturity
+
+  // Projected total outstanding on the date EMI begins: carry each tranche's
+  // balance forward to that date (pre-EMI interest keeps capitalising until
+  // then). This is the same figure the FIG. 02 curve reaches at the EMI mark.
+  const outstandingAtEmiStart = DISBURSEMENTS.reduce((s, d) => {
+    const row = findScheduleAtOrBefore(d, fullEmiStartDate)
+    return s + (row?.totalOutstanding ?? d.disbursedAmount)
+  }, 0)
 
   return (
     <div className="space-y-6">
@@ -264,9 +272,9 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
           />
           <Note
             index="ii"
-            title={fmtDateLong(fullEmiStartDate)}
-            subtitle="full EMI begins"
-            body={`From this date the combined monthly EMI across all ${DISBURSEMENTS.length} tranches is ${formatINRCompact(combinedEmi)} - principal repayment finally kicks in.`}
+            title={formatINRCompact(outstandingAtEmiStart)}
+            subtitle="outstanding when EMI begins"
+            body={`By ${fmtDateLong(fullEmiStartDate)}, pre-EMI interest will have lifted the balance to this. From there the combined EMI across all ${DISBURSEMENTS.length} tranches is ${formatINRCompact(combinedEmi)} a month and principal repayment finally kicks in.`}
           />
           <Note
             index="iii"
