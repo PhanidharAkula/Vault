@@ -13,6 +13,8 @@ type LiveStatus = {
   daysSinceBaseline: number
   dailyInterest: number
   accruedSinceBaseline: number
+  // interest the lender will charge on the next due date
+  periodInterest: number
   // current outstanding = baseline + accrued
   currentOutstanding: number
   // upcoming
@@ -33,8 +35,15 @@ export const computeLiveStatus = (d: DisbursementView, todayIso: string): LiveSt
   const baselineOutstanding = last?.totalOutstanding ?? d.disbursedAmount
   const baselineDate = last?.dueDate ?? d.disbursedDate
 
+  // The lender charges a flat month of interest on each due date (outstanding
+  // × the rate printed on that row / 12), whatever the month's length. Spread
+  // exactly that amount over the days in the period, so the live figure lands
+  // on the lender's own number on the due date. The row's rate also covers the
+  // whole period leading up to it, including the month before a revision.
+  const periodInterest = next && todayIso >= d.disbursedDate ? next.interest : 0
+  const periodDays = next ? Math.max(1, daysBetween(baselineDate, next.dueDate)) : 1
   const daysSinceBaseline = Math.max(0, daysBetween(baselineDate, todayIso))
-  const dailyInterest = (baselineOutstanding * (ratePeriod.rateOfInterest / 100)) / 365
+  const dailyInterest = periodInterest / periodDays
   const accruedSinceBaseline = dailyInterest * daysSinceBaseline
   const currentOutstanding = baselineOutstanding + accruedSinceBaseline
 
@@ -46,13 +55,15 @@ export const computeLiveStatus = (d: DisbursementView, todayIso: string): LiveSt
 
   return {
     disbursement: d,
-    ratePeriodIndex: ratePeriod.indexInDisbursement,
-    rate: ratePeriod.rateOfInterest,
+    // the rate interest is accruing at now: the next row's
+    ratePeriodIndex: next?.ratePeriodIndex ?? ratePeriod.indexInDisbursement,
+    rate: next?.rateAtPayment ?? ratePeriod.rateOfInterest,
     baselineOutstanding,
     baselineDate,
     daysSinceBaseline,
     dailyInterest,
     accruedSinceBaseline,
+    periodInterest,
     currentOutstanding,
     nextPayment: next,
     daysToNext: next ? daysBetween(todayIso, next.dueDate) : null,
@@ -69,6 +80,8 @@ export type AggregateStatus = {
   totalBaselineOutstanding: number
   totalAccruedToday: number
   totalDailyInterest: number
+  // interest the lender will charge across tranches on their next due dates
+  totalPeriodInterest: number
   totalPaid: number
   totalInterestPaid: number
   totalInterestCharged: number
@@ -95,6 +108,7 @@ export const computeAggregate = (todayIso: string): AggregateStatus => {
   const totalBaselineOutstanding = perDisbursement.reduce((s, p) => s + p.baselineOutstanding, 0)
   const totalAccruedToday = perDisbursement.reduce((s, p) => s + p.accruedSinceBaseline, 0)
   const totalDailyInterest = perDisbursement.reduce((s, p) => s + p.dailyInterest, 0)
+  const totalPeriodInterest = perDisbursement.reduce((s, p) => s + p.periodInterest, 0)
 
   let totalPaid = 0
   let totalInterestPaid = 0
@@ -156,6 +170,7 @@ export const computeAggregate = (todayIso: string): AggregateStatus => {
     totalBaselineOutstanding,
     totalAccruedToday,
     totalDailyInterest,
+    totalPeriodInterest,
     totalPaid,
     totalInterestPaid,
     totalInterestCharged,

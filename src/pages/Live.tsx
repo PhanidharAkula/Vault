@@ -106,7 +106,7 @@ const Live = () => {
                 <Escapement size={186} />
               </div>
               <div className="mt-5 text-center">
-                <div className="etch">Compounding</div>
+                <div className="etch">Accruing</div>
                 <div className="mt-1 font-display text-base italic text-ink-secondary">
                   day by day, every day
                 </div>
@@ -203,7 +203,7 @@ const LiveTrancheCard = ({
       </div>
       <div className="mt-4 grid grid-cols-3 divide-x divide-line border border-line bg-bg-base text-center">
         <Mini label="rate" value={`${live.rate.toFixed(2)}%`} />
-        <Mini label="/min" value={`+₹${(ratePerSec * 60).toFixed(2)}`} />
+        <Mini label="/min" value={`+${formatINRPrecise(ratePerSec * 60)}`} />
         <Mini label="/day" value={`+${formatINRCompact(live.dailyInterest)}`} />
       </div>
       <div className="mt-3 text-[10px] leading-relaxed text-ink-tertiary">

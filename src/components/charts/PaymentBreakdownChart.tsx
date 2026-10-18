@@ -29,6 +29,9 @@ export const PaymentBreakdownChart = ({
         srNo: r.srNo,
         interest: r.interest,
         principal: r.principal,
+        // what is actually paid: pre-EMI this is the part-interest, not the
+        // full interest charged
+        payment: r.paymentDue,
       })),
     [disbursement],
   )
@@ -76,6 +79,7 @@ const BTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null
   const interest = payload.find((p: any) => p.dataKey === 'interest')?.value ?? 0
   const principal = payload.find((p: any) => p.dataKey === 'principal')?.value ?? 0
+  const payment = payload[0].payload.payment
   return (
     <div className="readout">
       <div className="etch mb-1.5 !text-[9px]">{fmtDateLong(label)}</div>
@@ -89,7 +93,7 @@ const BTooltip = ({ active, payload, label }: any) => {
       </div>
       <div className="mt-1 flex items-center justify-between gap-4 border-t border-line pt-1">
         <span className="text-ink-secondary">Payment</span>
-        <span className="font-semibold tabular text-ink-primary">{formatINR(interest + principal)}</span>
+        <span className="font-semibold tabular text-ink-primary">{formatINR(payment)}</span>
       </div>
     </div>
   )

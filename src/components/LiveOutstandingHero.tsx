@@ -97,7 +97,7 @@ export const LiveOutstandingHero = () => {
             </span>
             <span>
               <span className="font-semibold tabular text-vermillion">
-                +{formatINRCompact(agg.totalDailyInterest * 30)}
+                +{formatINRCompact(agg.totalPeriodInterest)}
               </span>{' '}
               / month
             </span>

@@ -8,7 +8,7 @@ import { StatCard } from '../components/ui/StatCard'
 import { DrawBar } from '../components/ui/DrawBar'
 import { TapeTimeline } from '../components/ui/TapeTimeline'
 import { computeAggregate } from '../lib/calculations'
-import { DISBURSEMENTS, MASTER, TRANCHE_VAR, findScheduleAtOrBefore } from '../data/loanData'
+import { DISBURSEMENTS, MASTER, TRANCHE_VAR } from '../data/loanData'
 import { formatINR, formatINRCompact, formatPercent } from '../lib/format'
 import { fmtDateLong, formatRelative, tenureToYM, monthsBetween } from '../lib/dates'
 import { useTodayIso } from '../state/today'
@@ -40,11 +40,12 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
   const emiStarts = DISBURSEMENTS.map((d) => d.emiStartDate).filter(Boolean) as string[]
   const fullEmiStartDate = emiStarts.sort()[0] ?? MASTER.finalMaturity
 
-  // Projected total outstanding on the date EMI begins: carry each tranche's
-  // balance forward to that date (pre-EMI interest keeps capitalising until
-  // then). This is the same figure the FIG. 02 curve reaches at the EMI mark.
+  // Projected total outstanding just before the first EMI: the capitalised
+  // balance the EMIs repay (pre-EMI interest keeps capitalising until then).
+  // The row on the EMI date itself would already have the first EMI's
+  // principal taken off.
   const outstandingAtEmiStart = DISBURSEMENTS.reduce((s, d) => {
-    const row = findScheduleAtOrBefore(d, fullEmiStartDate)
+    const row = d.schedule.filter((r) => r.dueDate < fullEmiStartDate).at(-1)
     return s + (row?.totalOutstanding ?? d.disbursedAmount)
   }, 0)
 
@@ -274,12 +275,12 @@ const Overview = ({ onOpenDisbursement }: { onOpenDisbursement: (i: number) => v
             index="ii"
             title={formatINRCompact(outstandingAtEmiStart)}
             subtitle="outstanding when EMI begins"
-            body={`By ${fmtDateLong(fullEmiStartDate)}, pre-EMI interest will have lifted the balance to this. From there the combined EMI across all ${DISBURSEMENTS.length} tranches is ${formatINRCompact(combinedEmi)} a month and principal repayment finally kicks in.`}
+            body={`Before the first EMI on ${fmtDateLong(fullEmiStartDate)}, pre-EMI interest will have lifted the balance to this. From there the combined EMI across all ${DISBURSEMENTS.length} tranches is ${formatINRCompact(combinedEmi)} a month and principal repayment finally kicks in.`}
           />
           <Note
             index="iii"
-            title={formatINR(Math.round(agg.totalDailyInterest * 30))}
-            subtitle="interest / month"
+            title={formatINR(agg.totalPeriodInterest)}
+            subtitle="interest this month"
             body={`At today's outstanding, interest accrues at roughly ${formatINRCompact(agg.totalDailyInterest)} per day, every day, including today.`}
           />
         </div>

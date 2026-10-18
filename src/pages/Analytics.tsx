@@ -326,7 +326,7 @@ const Analytics = () => {
           fig="04"
           eyebrow="Progress"
           title="Where things stand now"
-          description="Tenure used, payments cleared, and interest already paid - read off the dials."
+          description="Tenure used, payments cleared, and interest already charged - read off the dials."
         />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <DialCell>
@@ -342,11 +342,14 @@ const Analytics = () => {
             />
           </DialCell>
           <DialCell>
+            {/* Charged-to-date against lifetime interest. Cash "interest paid"
+                can't be used here: the pre-EMI interest that capitalises is
+                repaid inside EMI principal, so it would never reach 100%. */}
             <Gauge
-              value={(agg.totalInterestPaid / agg.totalPlannedInterest) * 100}
+              value={(agg.totalInterestCharged / agg.totalPlannedInterest) * 100}
               accent={VERMILLION}
-              label="interest paid"
-              sublabel={`${formatINRCompact(agg.totalInterestPaid)} / ${formatINRCompact(agg.totalPlannedInterest)}`}
+              label="interest charged"
+              sublabel={`${formatINRCompact(agg.totalInterestCharged)} / ${formatINRCompact(agg.totalPlannedInterest)}`}
               size={200}
             />
           </DialCell>
