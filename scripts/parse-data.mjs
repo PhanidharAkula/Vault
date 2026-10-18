@@ -91,7 +91,7 @@ for (const raw of lines) {
       paymentDue: parseNumber(cols[2]),
       interest: parseNumber(cols[3]),
       principal: parseNumber(cols[4]),
-      interestAccrued: parseFloat(cols[5]) || 0,
+      interestAccrued: parseNumber(cols[5]),
       totalOutstanding: parseNumber(cols[6]),
       rateAtPayment: rp ? rp.rateOfInterest : 0,
       ratePeriodIndex: rp ? rp.indexInDisbursement : 0,

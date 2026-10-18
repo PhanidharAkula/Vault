@@ -2,13 +2,13 @@ import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { Plate, SectionTitle, Tag, InkSwatch } from '../components/ui/Plate'
-import { DISBURSEMENTS, TRANCHE_VAR } from '../data/loanData'
+import { DISBURSEMENTS, MASTER, TRANCHE_VAR } from '../data/loanData'
 import { useTodayIso } from '../state/today'
 import { useCurrency } from '../state/currency'
 import { fmtDateLong } from '../lib/dates'
 import { formatPercent } from '../lib/format'
 import { useChartTick } from '../lib/useChartTick'
-import { parseISO, format } from 'date-fns'
+import { addMonths, parseISO, format } from 'date-fns'
 import {
   CartesianGrid,
   Line,
@@ -49,8 +49,9 @@ const Rates = () => {
 
   // Build month-by-month chart series for each disbursement
   const chartData = useMemo(() => {
-    const start = '2024-07'
-    const end = '2038-08'
+    // first disbursement through the month after final maturity
+    const start = MASTER.firstDisbursedDate.slice(0, 7)
+    const end = format(addMonths(parseISO(MASTER.finalMaturity), 1), 'yyyy-MM')
     const months: string[] = []
     let cur = parseISO(start + '-01')
     const last = parseISO(end + '-01')
